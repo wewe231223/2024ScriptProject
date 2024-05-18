@@ -7,9 +7,8 @@ import re
 class ApiData:
     def __init__(self, url, query_params, item_tag, verify=True):
         query_params['serviceKey'] = unquote(query_params['serviceKey'])
-        response = requests.get(url, params=query_params, verify=verify)
         self.url = url
-        self.root = ElemTree.fromstring(response.text)
+        self.root = None
         self.query_params = query_params
 
         self.extract_item_tag = item_tag

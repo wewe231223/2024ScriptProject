@@ -14,7 +14,7 @@ region_code_api = ApiData(
         'row'
     )
 
-sido = {
+sido_codes = {
     '서울특별시': '11',
     '부산광역시': '21',
     '대구광역시': '22',
@@ -35,8 +35,12 @@ sido = {
 }
 
 
+def get_sido_codes():
+    return sido_codes
+
+
 def get_sgg_codes(sido_str):
-    if sido_str not in sido:
+    if sido_str not in sido_codes:
         print('not exist sido_cd')
         return {}
 
@@ -56,7 +60,7 @@ def get_sgg_codes(sido_str):
 
 
 def get_umd_codes(sido_str, sgg_str):
-    if sido_str not in sido:
+    if sido_str not in sido_codes:
         return {}
 
     region_code_api.get_new_data({'numOfRows': '1000', 'locatadd_nm': sido_str+' '+sgg_str}, True)
@@ -76,7 +80,7 @@ def get_umd_codes(sido_str, sgg_str):
 
 
 def get_ri_codes(sido_str, sgg_str, umd_str):
-    if sido_str not in sido:
+    if sido_str not in sido_codes:
         return {}
 
     region_code_api.get_new_data({'numOfRows': '1000',
