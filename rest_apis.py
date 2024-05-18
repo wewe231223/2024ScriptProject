@@ -1,22 +1,76 @@
 import requests
 import xml.etree.ElementTree as ElemTree
+from urllib.parse import unquote
+import re
 
-#병원정보 서비스 예제
-url = 'http://openapi.molit.go.kr/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTradeDev'
-# 공공데이터포털에서 발급받은 디코딩되지 않은 인증키 입력
-service_key = "4PeRdvcpIuthF6GZYn7+TxeUSYDgoQEP1gaFkynbIdFTJkFRx2TFi67lwYUpDU4cC5YvATmAbjH9Z+mtPtt/BQ=="
-query_params = {'serviceKey': service_key, 'pageNo': '1', 'numOfRows': '10', 'LAWD_CD': '11110', 'DEAL_YMD': '202004'}
+class ApiData:
+    def __init__(self, url, query_params, item_tag, verify=True):
+        query_params['serviceKey'] = unquote(query_params['serviceKey'])
+        response = requests.get(url, params=query_params, verify=verify)
+        self.url = url
+        self.root = ElemTree.fromstring(response.text)
+        self.query_params = query_params
 
-response = requests.get(url, params=query_params)
-root = ElemTree.fromstring(response.text)
+        self.extract_item_tag = item_tag
+        self.data_tags = set()
+        self.api_data = []
+        self.extract_data_root_child()
 
-api_tags = []
-api_data = {}
+    def extract_data_root_child(self):
+        for item in self.root.iter(self.extract_item_tag):
+            dict_data = {}
+            for elem in item:
+                self.data_tags.add(elem.text)
+                dict_data[elem.tag] = elem.text
+            self.api_data.append(dict_data)
 
-for item in root.iter('item'):
-    for texts in item:
-        api_tags = texts.tag
-        api_data[texts.tag] = texts.text
+    def get_new_data(self, param_tag, new_param_data, item_tag=''):
+        self.query_params[param_tag] = new_param_data
+        response = requests.get(self.url, params=self.query_params)
+        self.root = ElemTree.fromstring(response.text)
+        if item_tag != '':
+            self.extract_item_tag = item_tag
 
-for key, value in api_data.items():
-    print(f'{key}: {value}')
+        self.api_data.clear()
+        self.extract_data_root_child()
+
+    def append_new_data(self, param_tag, new_param_data, item_tag=''):
+        self.query_params[param_tag] = new_param_data
+        response = requests.get(self.url, params=self.query_params)
+        self.root = ElemTree.fromstring(response.text)
+        if item_tag != '':
+            self.extract_item_tag = item_tag
+
+        self.extract_data_root_child()
+
+    def dict_data_to_strings(self):
+        strings = []
+        for dict_data in self.api_data:
+            string = ''
+            for key, value in dict_data.items():
+                if not key or not value:
+                    continue
+
+                value_remove_all = re.sub(r"\s", "", value)
+                if value_remove_all != '':
+                    string += f'{key} : {value}\n'
+            strings.append(string)
+        return strings
+
+    def get_item_tags(self):
+        return self.data_tags
+
+    def get_data(self, tags=[], type_func=None):
+        if not tags:
+            return self.api_data
+
+        rt_data = {}
+        for tag in tags:
+            rt_data[tag] = []
+            for data in self.api_data:
+                if type_func:
+                    rt_data[tag].append(type_func(data[tag]))
+                else:
+                    rt_data[tag].append(data[tag])
+        print(rt_data)
+        return rt_data
