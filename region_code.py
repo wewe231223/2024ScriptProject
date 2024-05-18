@@ -95,8 +95,15 @@ def get_ri_codes(sido_str, sgg_str, umd_str):
     region_code_api.clear_data()
     return ri_codes
 
-# print(get_sgg_codes('강원특별자치도'))
-# print(get_umd_codes('강원특별자치도', '동해시'))
+
+def get_ri_code(sido_str, sgg_str, umd_str, ri_str):
+    region_code_api.get_new_data({'numOfRows': 1,
+                                 'locatadd_nm': sido_str + ' ' + sgg_str+' '+umd_str+' '+ri_str})
+    region_data = region_code_api.get_data(['locatadd_nm', 'region_cd'])
+    if not region_data:
+        return {}
+
+    return {region_data['locatadd_nm'][0]: region_data['region_cd'][0] }
 
 
 # test_code

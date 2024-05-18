@@ -17,6 +17,9 @@ class ApiData:
         self.api_data = []
         self.elem_count = 0
 
+    def get_root_elem(self):
+        return self.root
+
     def extract_data_root_child(self):
         for item in self.root.iter(self.extract_item_tag):
             dict_data = {}
