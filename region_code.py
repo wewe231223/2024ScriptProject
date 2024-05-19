@@ -48,7 +48,7 @@ def get_sgg_codes(sido_str):
     region_code_api.get_new_data({'numOfRows': '1000', 'locatadd_nm': sido_str}, True)
     region_data = region_code_api.get_data(['locatadd_nm', 'sgg_cd'])
     sgg_codes = {}
-    for locate_name, sgg_cd in zip(region_data['locatadd_nm'], region_data['sgg_cd']):
+    for locate_name, sgg_cd in zip(*list(region_data.values())):
         split_names = list(locate_name.split())
         if len(split_names) < 2:
             continue
@@ -68,7 +68,7 @@ def get_umd_codes(sido_str, sgg_str):
     region_data = region_code_api.get_data(['locatadd_nm', 'umd_cd'])
 
     umd_codes = {}
-    for locate_name, sgg_cd in zip(region_data['locatadd_nm'], region_data['umd_cd']):
+    for locate_name, sgg_cd in zip(*list(region_data.values())):
         split_names = list(locate_name.split())
         if len(split_names) < 3:
             continue
@@ -89,7 +89,7 @@ def get_ri_codes(sido_str, sgg_str, umd_str):
                                  True)
     region_data = region_code_api.get_data(['locatadd_nm', 'ri_cd'])
     ri_codes = {}
-    for locate_name, sgg_cd in zip(region_data['locatadd_nm'], region_data['ri_cd']):
+    for locate_name, sgg_cd in zip(*list(region_data.values())):
         split_names = list(locate_name.split())
         if len(split_names) < 4:
             continue
@@ -108,7 +108,7 @@ def get_ri_code(sido_str, sgg_str, umd_str, ri_str):
     if not region_data:
         return {}
 
-    return {region_data['locatadd_nm'][0]: region_data['region_cd'][0] }
+    return {region_data['locatadd_nm'][0]: region_data['region_cd'][0]}
 
 
 # test_code
@@ -165,7 +165,7 @@ if __name__ == '__main__':
         umd_str = e3.get()
         dict_data = get_ri_codes(sido_str, sgg_str, umd_str)
         if not dict_data:
-            label['text'] = '그런 읍면동은 없습니다.'
+            label['text'] = '읍면동이 없거나 해당 읍면동에 XX리 정보가 없습니다.'
             return
 
         label['text'] = 'XX리 데이터 목록\n' + dict_code_to_string(dict_data)
