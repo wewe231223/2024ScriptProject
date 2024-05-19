@@ -54,11 +54,21 @@ class MainGUI:
         self.lbl_search = Label(self.search_frame, text="지역으로 검색")
         self.lbl_search.grid(row=0, column=0)
 
-        self.local_option = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5', 'Option 6']
-        self.selected_local_option = StringVar(self.search_frame)
-        self.selected_local_option.set(self.local_option[0])
-        self.option_menu = ttk.Combobox(self.search_frame,values=self.local_option,height=10, width=30)
-        self.option_menu.grid(row=0, column=2)
+        self.local_option_DO            = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5', 'Option 6']
+        self.local_option_SI_GUN_GU     = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5', 'Option 6']
+        self.local_option_EUP_MEON_DONG = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5', 'Option 6']
+
+        self.option_menu_DO = ttk.Combobox(self.search_frame,values=self.local_option_DO,height=10, width=30)
+        self.option_menu_DO.grid(row=0, column=2)
+
+        self.option_menu_SI_GUN_GU = ttk.Combobox(self.search_frame,values=self.local_option_DO,height=10, width=30)
+        self.option_menu_SI_GUN_GU.grid(row=0, column=3)
+
+        self.option_menu_EUP_MEON_DONG = ttk.Combobox(self.search_frame,values=self.local_option_DO,height=10, width=30)
+        self.option_menu_EUP_MEON_DONG.grid(row=0, column=4)
+
+
+
 
 
         # 정렬 기준
@@ -66,8 +76,6 @@ class MainGUI:
         self.lbl_sort.grid(row=1, column=0)
 
         self.sort_option = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5', 'Option 6']
-        self.selected_sort_option = StringVar(self.search_frame)
-        self.selected_sort_option.set(self.sort_option[0])
         self.sort_option = ttk.Combobox(self.search_frame,values=self.sort_option,height=10, width=30)
         self.sort_option.grid(row=1, column=2)
 
