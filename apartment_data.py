@@ -14,7 +14,3 @@ apartment_api = ApiData(
     query_params,
     'item'
 )
-
-lst = apartment_api.get_data(['도로명', '아파트', '도로명건물본번호코드'])
-for d, c, a in zip(lst['도로명'], lst['도로명건물본번호코드'], lst['아파트']):
-    print(f'{d}-{int(c)} {a}')
