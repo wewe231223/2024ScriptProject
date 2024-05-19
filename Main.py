@@ -56,9 +56,10 @@ class MainGUI:
             self.option_menu_umd['values'] = self.local_option_umd
             self.option_menu_umd.set(self.local_option_umd[0])
 
-
+        self.listbox.delete(0,END)
         text = get_apart_info(get_apart_trade_simple_data(self.region_code, 202010))
-        self.result_label['text'] = text
+        for t in text:
+            self.listbox.insert(END,t)
 
     def umd_invoke(self,event):
         umd = self.option_menu_umd.get()
@@ -141,9 +142,6 @@ class MainGUI:
 
         self.result_frame = Frame(self.content_frame)
         self.result_frame.pack(fill='both', expand=True)
-
-        self.result_label = Label(self.result_frame, text='', anchor='w')
-        self.result_label.pack()
 
         self.listbox = Listbox(self.result_frame)
         self.listbox.pack(side='left',fill='both', expand=True)
