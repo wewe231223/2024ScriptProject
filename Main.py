@@ -132,8 +132,12 @@ class MainGUI:
         self.graph_frame = Frame(self.window)
         self.graph_frame.grid(row=0,column=1,rowspan=3,sticky='nsew')
 
-        self.content_frame.tkraise()
 
+
+
+
+
+        self.content_frame.tkraise()
 
         self.right_button_frame = Frame(self.window ,width=300)
         self.right_button_frame.grid(row=0,column=2,rowspan=3,sticky='nsew',padx=30,pady=30)
