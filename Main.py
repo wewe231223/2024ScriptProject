@@ -2,6 +2,7 @@ from tkinter import *
 from tkcalendar import DateEntry
 from tkinter import ttk
 from lotnum_to_roadnm import *
+from apartment_data import *
 from region_code import *
 
 
@@ -35,29 +36,42 @@ class MainGUI:
         sido = self.option_menu_sido.get()
         dict_data = get_sgg_codes(sido)
         if dict_data:
+            self.region_code = sido_codes[sido]
+            self.sgg_codes = dict_data
             self.local_option_sgg = self.local_option_sgg[:1]
             self.local_option_sgg += list(dict_data.keys())
             self.option_menu_sgg['values'] = self.local_option_sgg
             self.option_menu_sgg.set(self.local_option_sgg[0])
 
     def sgg_invoke(self,event):
+        sido = self.option_menu_sido.get()
         sgg = self.option_menu_sgg.get()
-        dict_data = get_umd_codes(sgg)
+        self.region_code += self.sgg_codes[sgg]
+        dict_data = get_umd_codes(sido, sgg)
+
+        # 읍면동 정보 불러오기 (없으면 dict_data == {})
         if dict_data:
             self.local_option_umd = self.local_option_umd[:1]
             self.local_option_umd += list(dict_data.keys())
             self.option_menu_umd['values'] = self.local_option_umd
             self.option_menu_umd.set(self.local_option_umd[0])
 
+
+        text = get_apart_info(get_apart_trade_simple_data(self.region_code, 202010))
+        self.result_label['text'] = text
+
     def umd_invoke(self,event):
-        curr = self.option_menu_umd.get()
-        print(curr)
-        pass
+        umd = self.option_menu_umd.get()
 
     def __init__(self):
         self.window = Tk()
         self.window.title("Apartment Search App")
         self.window.geometry("1920x1080")
+
+        # 검색용 변수들
+        self.region_code = ''
+        self.sgg_codes = {}
+        self.umd_codes = {}
 
         # 좌측 메뉴 프레임
         self.menu_frame = Frame(self.window, width=300, bg='white')
@@ -127,6 +141,9 @@ class MainGUI:
 
         self.result_frame = Frame(self.content_frame)
         self.result_frame.pack(fill='both', expand=True)
+
+        self.result_label = Label(self.result_frame, text='', anchor='w')
+        self.result_label.pack()
 
         self.listbox = Listbox(self.result_frame)
         self.listbox.pack(side='left',fill='both', expand=True)
