@@ -1,6 +1,9 @@
 from tkinter import *
 from tkcalendar import DateEntry
 from tkinter import ttk
+from lotnum_to_roadnm import *
+from region_code import *
+
 
 class MainGUI:
     def reset_button_colors(self):
@@ -28,21 +31,26 @@ class MainGUI:
     def send_email(self):
         pass
 
+    def sido_invoke(self,event):
+        sido = self.option_menu_sido.get()
+        dict_data = get_sgg_codes(sido)
+        if dict_data:
+            self.local_option_sgg = self.local_option_sgg[:1]
+            self.local_option_sgg += list(dict_data.keys())
+            self.option_menu_sgg['values'] = self.local_option_sgg
+            self.option_menu_sgg.set(self.local_option_sgg[0])
 
-    def DO_invoke(self,event):
-        curr = self.option_menu_DO.get()
-        print(curr)
-        pass
+    def sgg_invoke(self,event):
+        sgg = self.option_menu_sgg.get()
+        dict_data = get_umd_codes(sgg)
+        if dict_data:
+            self.local_option_umd = self.local_option_umd[:1]
+            self.local_option_umd += list(dict_data.keys())
+            self.option_menu_umd['values'] = self.local_option_umd
+            self.option_menu_umd.set(self.local_option_umd[0])
 
-
-    def SI_GUN_GU_invoke(self,event):
-        curr = self.option_menu_SI_GUN_GU.get()
-        print(curr)
-        pass
-
-
-    def EUP_MEON_DONG_invoke(self,event):
-        curr = self.option_menu_EUP_MEON_DONG.get()
+    def umd_invoke(self,event):
+        curr = self.option_menu_umd.get()
         print(curr)
         pass
 
@@ -82,21 +90,21 @@ class MainGUI:
         self.lbl_search = Label(self.search_frame, text="지역으로 검색")
         self.lbl_search.grid(row=0, column=0)
 
-        self.local_option_DO            = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5', 'Option 6']
-        self.local_option_SI_GUN_GU     = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5', 'Option 6']
-        self.local_option_EUP_MEON_DONG = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5', 'Option 6']
+        self.local_option_sido = ['선택'] + list(sido_codes.keys())
+        self.local_option_sgg = ['선택']
+        self.local_option_umd = ['선택']
 
-        self.option_menu_DO = ttk.Combobox(self.search_frame,values=self.local_option_DO,height=10, width=30)
-        self.option_menu_DO.bind("<<ComboboxSelected>>", self.DO_invoke)
-        self.option_menu_DO.grid(row=0, column=2)
+        self.option_menu_sido = ttk.Combobox(self.search_frame,values=self.local_option_sido,height=10, width=30)
+        self.option_menu_sido.bind("<<ComboboxSelected>>", self.sido_invoke)
+        self.option_menu_sido.grid(row=0, column=2)
 
-        self.option_menu_SI_GUN_GU = ttk.Combobox(self.search_frame,values=self.local_option_DO,height=10, width=30)
-        self.option_menu_SI_GUN_GU.bind("<<ComboboxSelected>>", self.SI_GUN_GU_invoke)
-        self.option_menu_SI_GUN_GU.grid(row=0, column=3)
+        self.option_menu_sgg = ttk.Combobox(self.search_frame,values=self.local_option_sgg,height=10, width=30)
+        self.option_menu_sgg.bind("<<ComboboxSelected>>", self.sgg_invoke)
+        self.option_menu_sgg.grid(row=0, column=3)
 
-        self.option_menu_EUP_MEON_DONG = ttk.Combobox(self.search_frame,values=self.local_option_DO,height=10, width=30)
-        self.option_menu_EUP_MEON_DONG.bind("<<ComboboxSelected>>", self.EUP_MEON_DONG_invoke)
-        self.option_menu_EUP_MEON_DONG.grid(row=0, column=4)
+        self.option_menu_umd = ttk.Combobox(self.search_frame, values=self.local_option_umd, height=10, width=30)
+        self.option_menu_umd.bind("<<ComboboxSelected>>", self.umd_invoke)
+        self.option_menu_umd.grid(row=0, column=4)
 
 
         # 정렬 기준
