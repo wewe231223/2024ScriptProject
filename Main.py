@@ -3,14 +3,24 @@ from tkcalendar import DateEntry
 from tkinter import ttk
 
 class MainGUI:
+    def reset_button_colors(self):
+        self.btn_search.config(bg='white', fg='black')
+        self.btn_graph.config(bg='white', fg='black')
+        self.btn_favorites.config(bg='white', fg='black')
+
     def search_apartments(self):
-        pass
+        self.reset_button_colors()
+        self.btn_search.config(bg='red', fg='white')
+        self.content_frame.tkraise()
 
     def show_graph(self):
-        pass
+        self.reset_button_colors()
+        self.btn_graph.config(bg='red', fg='white')
+        self.graph_frame.tkraise()
 
     def show_favorites(self):
-        pass
+        self.reset_button_colors()
+        self.btn_favorites.config(bg='red', fg='white')
 
     def open_telegram(self):
         pass
@@ -62,7 +72,7 @@ class MainGUI:
 
         # 우측 콘텐츠 프레임
         self.content_frame = Frame(self.window)
-        self.content_frame.grid(row=0, column=1, rowspan=3, sticky='nsew')
+        self.content_frame.grid(row=0, column=1, rowspan=4, sticky='nsew')
 
         # 상단 검색 기능 프레임
         self.search_frame = Frame(self.content_frame,padx=10,pady=10)
@@ -87,9 +97,6 @@ class MainGUI:
         self.option_menu_EUP_MEON_DONG = ttk.Combobox(self.search_frame,values=self.local_option_DO,height=10, width=30)
         self.option_menu_EUP_MEON_DONG.bind("<<ComboboxSelected>>", self.EUP_MEON_DONG_invoke)
         self.option_menu_EUP_MEON_DONG.grid(row=0, column=4)
-
-
-
 
 
         # 정렬 기준
@@ -122,6 +129,12 @@ class MainGUI:
 
 
 
+        self.graph_frame = Frame(self.window)
+        self.graph_frame.grid(row=0,column=1,rowspan=3,sticky='nsew')
+
+        self.content_frame.tkraise()
+
+
         self.right_button_frame = Frame(self.window ,width=300)
         self.right_button_frame.grid(row=0,column=2,rowspan=3,sticky='nsew',padx=30,pady=30)
 
@@ -140,9 +153,10 @@ class MainGUI:
 
 
         # 위치 맞추기
-        self.window.grid_columnconfigure(1,weight=1)
-        self.window.grid_columnconfigure(2,weight=0)
-        self.window.grid_rowconfigure(1,weight=1)
+        self.window.grid_rowconfigure(0,weight=1)
+        self.window.grid_columnconfigure(1,weight=3)
+        self.window.grid_columnconfigure(2,weight=2)
+
 
 
         self.window.mainloop()
