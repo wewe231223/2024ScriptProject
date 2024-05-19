@@ -1,9 +1,15 @@
+import os.path
+import time
 from tkinter import *
+
+import tkintermapview
 from tkcalendar import DateEntry
 from tkinter import ttk
 from lotnum_to_roadnm import *
 from apartment_data import *
 from region_code import *
+
+from tkintermapview import TkinterMapView
 
 
 class MainGUI:
@@ -163,20 +169,23 @@ class MainGUI:
         self.content_frame.tkraise()
 
         self.right_button_frame = Frame(self.window ,width=300)
-        self.right_button_frame.grid(row=0,column=2,rowspan=3,sticky='nsew',padx=30,pady=30)
+        self.right_button_frame.grid(row=0,column=2,rowspan=2,sticky='nsew',padx=30,pady=30)
 
         self.telegram_image = PhotoImage(file='Resources/Telegram.png')
         self.telegram_button = Button(self.right_button_frame,image=self.telegram_image,command=self.open_telegram)
-        self.telegram_button.pack(pady=10)
+        self.telegram_button.pack(padx=10)
 
         self.email_image = PhotoImage(file='Resources/Gmail.png')
         self.email_button = Button(self.right_button_frame,image=self.email_image,command=self.send_email)
-        self.email_button.pack(pady=10)
+        self.email_button.pack(padx=10)
 
 
-        self.map_canvas = Canvas(self.right_button_frame,bg='white', width=600, height=600)
-        self.map_canvas.create_text(300,300, text="지도 영역 입니다", fill="black")
-        self.map_canvas.pack(pady=10)
+
+
+        self.map = TkinterMapView(self.right_button_frame,width=800, height=600, corner_radius=0)
+        self.map.set_address("SEOUL")
+        self.map.pack(pady=10)
+
 
 
         # 위치 맞추기
