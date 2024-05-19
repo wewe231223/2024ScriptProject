@@ -12,11 +12,15 @@ class ApiData:
         self.root = None
         self.query_params = query_params
         self.headers = headers
+        self.verify = verify
 
         self.extract_item_tag = item_tag
         self.data_tags = set()
         self.api_data = []
         self.elem_count = 0
+
+    def change_url(self, new_url):
+        self.url = new_url
 
     def get_response(self):
         response = requests.get(self.url, headers=self.headers, params=self.query_params)
