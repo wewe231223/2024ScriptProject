@@ -180,12 +180,10 @@ class MainGUI:
         self.email_button.pack(padx=10)
 
 
-
-
         self.map = TkinterMapView(self.right_button_frame,width=800, height=600, corner_radius=0)
-        self.map.set_address("SEOUL")
-        self.map.pack(pady=10)
 
+        self.map.set_position(37.3410721,126.7326877)
+        self.map.pack(pady=10)
 
 
         # 위치 맞추기
