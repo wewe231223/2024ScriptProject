@@ -18,6 +18,24 @@ class MainGUI:
     def send_email(self):
         pass
 
+
+    def DO_invoke(self,event):
+        curr = self.option_menu_DO.get()
+        print(curr)
+        pass
+
+
+    def SI_GUN_GU_invoke(self,event):
+        curr = self.option_menu_SI_GUN_GU.get()
+        print(curr)
+        pass
+
+
+    def EUP_MEON_DONG_invoke(self,event):
+        curr = self.option_menu_EUP_MEON_DONG.get()
+        print(curr)
+        pass
+
     def __init__(self):
         self.window = Tk()
         self.window.title("Apartment Search App")
@@ -59,12 +77,15 @@ class MainGUI:
         self.local_option_EUP_MEON_DONG = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5', 'Option 6']
 
         self.option_menu_DO = ttk.Combobox(self.search_frame,values=self.local_option_DO,height=10, width=30)
+        self.option_menu_DO.bind("<<ComboboxSelected>>", self.DO_invoke)
         self.option_menu_DO.grid(row=0, column=2)
 
         self.option_menu_SI_GUN_GU = ttk.Combobox(self.search_frame,values=self.local_option_DO,height=10, width=30)
+        self.option_menu_SI_GUN_GU.bind("<<ComboboxSelected>>", self.SI_GUN_GU_invoke)
         self.option_menu_SI_GUN_GU.grid(row=0, column=3)
 
         self.option_menu_EUP_MEON_DONG = ttk.Combobox(self.search_frame,values=self.local_option_DO,height=10, width=30)
+        self.option_menu_EUP_MEON_DONG.bind("<<ComboboxSelected>>", self.EUP_MEON_DONG_invoke)
         self.option_menu_EUP_MEON_DONG.grid(row=0, column=4)
 
 
