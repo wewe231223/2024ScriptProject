@@ -5,16 +5,22 @@ import re
 
 
 class ApiData:
-    def __init__(self, url, query_params, item_tag, verify=True):
-        query_params['serviceKey'] = unquote(query_params['serviceKey'])
+    def __init__(self, url, headers, query_params, item_tag, verify=True):
+        if 'serviceKey' in query_params:
+            query_params['serviceKey'] = unquote(query_params['serviceKey'])
         self.url = url
         self.root = None
         self.query_params = query_params
+        self.headers = headers
 
         self.extract_item_tag = item_tag
         self.data_tags = set()
         self.api_data = []
         self.elem_count = 0
+
+    def get_response(self):
+        response = requests.get(self.url, headers=self.headers, params=self.query_params)
+        self.root = ElemTree.fromstring(response.text)
 
     def get_root_elem(self):
         return self.root
@@ -34,8 +40,7 @@ class ApiData:
 
         for k, v in new_params.items():
             self.query_params[k] = v
-        response = requests.get(self.url, params=self.query_params)
-        self.root = ElemTree.fromstring(response.text)
+        self.get_response()
 
         if item_tag != '':
             self.extract_item_tag = item_tag
@@ -58,8 +63,8 @@ class ApiData:
     def append_new_data(self, new_params, item_tag=''):
         for k, v in new_params.items():
             self.query_params[k] = v
-        response = requests.get(self.url, params=self.query_params)
-        self.root = ElemTree.fromstring(response.text)
+
+        self.get_response()
         if item_tag != '':
             self.extract_item_tag = item_tag
 
@@ -85,8 +90,9 @@ class ApiData:
     def get_item_tags(self):
         return self.data_tags
 
-    def get_data(self, tags, type_func=None):
+    def get_data(self, tags=[], type_func=None):
         if not self.api_data:
+            self.get_response()
             self.extract_data_root_child()
 
         if not tags:

@@ -9,10 +9,11 @@ query_params = {
 }
 
 region_code_api = ApiData(
-        'http://apis.data.go.kr/1741000/StanReginCd/getStanReginCdList',
-        query_params,
-        'row'
-    )
+    'http://apis.data.go.kr/1741000/StanReginCd/getStanReginCdList',
+    None,
+    query_params,
+    'row'
+)
 
 sido_codes = {
     '서울특별시': '11',
