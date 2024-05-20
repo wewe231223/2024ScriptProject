@@ -24,10 +24,7 @@ def kakaomap_search(road_name, tags=[]):
 def kakaomap_xy_search(road_name):
     kakaomap_api.get_new_data({'query': road_name})
     data = kakaomap_api.get_data(['address_name', 'x', 'y'])
-    rt_val = {}
-    for tag in list(data.keys()):
-        rt_val[tag] = data[tag][0]
-    return rt_val
+    return data[0]
 
 #test code
 if __name__ == '__main__':

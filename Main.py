@@ -8,6 +8,7 @@ from tkinter import ttk
 from lotnum_to_roadnm import *
 from apartment_data import *
 from region_code import *
+from kakao_api import *
 
 from tkintermapview import TkinterMapView
 
@@ -57,18 +58,27 @@ class MainGUI:
 
         # 읍면동 정보 불러오기 (없으면 dict_data == {})
         if dict_data:
+            self.umd_codes = dict_data
             self.local_option_umd = self.local_option_umd[:1]
             self.local_option_umd += list(dict_data.keys())
             self.option_menu_umd['values'] = self.local_option_umd
             self.option_menu_umd.set(self.local_option_umd[0])
 
+    def umd_invoke(self,event):
+        sido = self.option_menu_sido.get()
+        sgg = self.option_menu_sgg.get()
+        umd = self.option_menu_umd.get()
+
+        locate_data = kakaomap_xy_search(sido+' '+sgg+' '+umd)
+        print(float(locate_data['x']), float(locate_data['y']))
+        self.map.set_position(float(locate_data['y']), float(locate_data['x']))
+
+        umd_code = self.umd_codes[umd]
+
         self.listbox.delete(0,END)
-        text = get_apart_info(get_apart_trade_simple_data(self.region_code, 202010))
+        text = get_apart_info(get_umd_apart_trade_data(self.region_code, 202010, umd_code))
         for t in text:
             self.listbox.insert(END,t)
-
-    def umd_invoke(self,event):
-        umd = self.option_menu_umd.get()
 
     def __init__(self):
         self.window = Tk()
@@ -180,7 +190,7 @@ class MainGUI:
         self.email_button.pack(padx=10)
 
         self.map = TkinterMapView(self.right_button_frame,width=800, height=600, corner_radius=0)
-        self.map.set_position(37.3410721,126.7326877)
+        self.map.set_position(37.3410721,127.7326877)
         self.map.pack(pady=10)
 
         # 위치 맞추기

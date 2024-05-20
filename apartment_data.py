@@ -1,7 +1,7 @@
 from rest_apis import *
 
 query_params = {
-    'serviceKey': "mCs5VgBMDTzgbM3a9ErIkLcJ/6Fg0gdBectxinG0WAlEH4LmwjKhuYZHTl0VpZ1AebN7P0D+96ltQ8zCXXoB+A==",
+    'serviceKey': "4PeRdvcpIuthF6GZYn7+TxeUSYDgoQEP1gaFkynbIdFTJkFRx2TFi67lwYUpDU4cC5YvATmAbjH9Z+mtPtt/BQ==",
     'pageNo': '1',
     'numOfRows': '1000',
     'LAWD_CD': '',
@@ -21,6 +21,18 @@ def get_apart_trade_simple_data(sgg_code, ym):
     return apartment_ex_api.get_data(['거래금액', '건축년도', '년', '월', '일', '아파트', '법정동', '지번', '층', '전용면적'])
 
 
+def get_umd_apart_trade_data(sgg_code, ym, umd_code):
+    dict_data = apartment_ex_api.get_new_data({'LAWD_CD': sgg_code, 'DEAL_YMD': ym})
+
+    rt_data = []
+    for data in dict_data:
+        if data['법정동읍면동코드'][:3] != umd_code:
+            continue
+
+        rt_data.append(data)
+    return rt_data
+
+
 def get_apart_info(info_data):
     strings = []
     for dict_data in info_data:
@@ -30,6 +42,7 @@ def get_apart_info(info_data):
         strings.append(string)
 
     return strings
+
 
 #test code
 if __name__ == '__main__':
@@ -69,7 +82,7 @@ if __name__ == '__main__':
                     for m in range(1, 12 + 1):
                         write_apart_data_in_file(f, region_code, str(y)+str(m))
 
-    def get_all_data(start_ym, end_ym, sido, row_code=None):
+    def write_csv_all_data(start_ym, end_ym, sido, row_code=None):
         dir_path = './부동산자료/'
         names, codes = get_code_list(sido)
 
@@ -78,4 +91,3 @@ if __name__ == '__main__':
         for name, code in zip(names, codes):
             apartment_data_write(name, code, dir_path, start_y, start_m, end_y, end_m)
 
-    get_all_data('202010', '202404', '서울특별시')
