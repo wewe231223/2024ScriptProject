@@ -1,7 +1,8 @@
 from rest_apis import *
+from urllib.parse import quote
 
 url = "https://dapi.kakao.com/v2/local/search/address.xml"
-headers = {'Authorization': 'KakaoAK 4183e7656b4d6b5d12da3a0eea9e6e20'}
+headers = {'Authorization': 'KakaoAK '+quote('4183e7656b4d6b5d12da3a0eea9e6e20')}
 query_params = {'query': '', 'analyze_type': 'exact'}
 
 kakaomap_api = ApiData(
@@ -22,8 +23,11 @@ def kakaomap_search(road_name, tags=[]):
 
 def kakaomap_xy_search(road_name):
     kakaomap_api.get_new_data({'query': road_name})
-    return kakaomap_api.get_data(['address_name', 'x', 'y'])
-
+    data = kakaomap_api.get_data(['address_name', 'x', 'y'])
+    rt_val = {}
+    for tag in list(data.keys()):
+        rt_val[tag] = data[tag][0]
+    return rt_val
 
 #test code
 if __name__ == '__main__':
@@ -31,8 +35,8 @@ if __name__ == '__main__':
 
     def address_locate_to_string(dict_data):
         string = ''
-        for address, x, y in zip(*list(dict_data.values())):
-            string += f'address: {address}\nx: {x}\ny: {y}\n'
+        for k, v in dict_data.items():
+            string += f'{k}: {v}\n'
         return string
 
     def search_road(_):

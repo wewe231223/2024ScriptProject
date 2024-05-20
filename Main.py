@@ -179,12 +179,9 @@ class MainGUI:
         self.email_button = Button(self.right_button_frame,image=self.email_image,command=self.send_email)
         self.email_button.pack(padx=10)
 
-
         self.map = TkinterMapView(self.right_button_frame,width=800, height=600, corner_radius=0)
-        self.map.set_marker(37.3410721,126.7326877,'red')
         self.map.set_position(37.3410721,126.7326877)
         self.map.pack(pady=10)
-
 
         # 위치 맞추기
         self.window.grid_rowconfigure(0,weight=1)
