@@ -23,8 +23,11 @@ def kakaomap_search(road_name, tags=[]):
 
 def kakaomap_xy_search(road_name):
     kakaomap_api.get_new_data({'query': road_name})
-    data = kakaomap_api.get_data(['address_name', 'x', 'y'])
-    return data[0]
+    data = kakaomap_api.get_data(['x', 'y'])
+    if not data:
+        return None, None
+
+    return float(data[0]['x']), float(data[0]['y'])
 
 #test code
 if __name__ == '__main__':

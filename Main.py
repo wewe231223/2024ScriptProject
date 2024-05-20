@@ -69,14 +69,26 @@ class MainGUI:
         sgg = self.option_menu_sgg.get()
         umd = self.option_menu_umd.get()
 
-        locate_data = kakaomap_xy_search(sido+' '+sgg+' '+umd)
-        print(float(locate_data['x']), float(locate_data['y']))
-        self.map.set_position(float(locate_data['y']), float(locate_data['x']))
-
         umd_code = self.umd_codes[umd]
 
         self.listbox.delete(0,END)
-        text = get_apart_info(get_umd_apart_trade_data(self.region_code, 202010, umd_code))
+        data_list = get_umd_apart_trade_data(self.region_code, 202010, umd_code)
+        for data in data_list:
+            search_keyword = f'{data['법정동']} {data['지번']} {data['아파트']}'
+            locate = lotaddr_to_roadname(search_keyword)
+            if not locate:
+                continue
+
+            x, y = kakaomap_xy_search(locate['roadAddr'])
+            if not x:
+                continue
+
+            self.map.set_marker(y, x, data['아파트'])
+
+        umd_x, umd_y = kakaomap_xy_search(sido + ' ' + sgg + ' ' + umd)
+        self.map.set_position(umd_y, umd_x)
+
+        text = get_apart_info(data_list)
         for t in text:
             self.listbox.insert(END,t)
 
@@ -190,7 +202,7 @@ class MainGUI:
         self.email_button.pack(padx=10)
 
         self.map = TkinterMapView(self.right_button_frame,width=800, height=600, corner_radius=0)
-        self.map.set_position(37.3410721,127.7326877)
+        self.map.set_position(37.3410721,126.7326877)
         self.map.pack(pady=10)
 
         # 위치 맞추기

@@ -21,14 +21,20 @@ juso_api = ApiData(
 
 def lotaddr_to_roadname(lot_addr):
     juso_api.get_new_data({'keyword': lot_addr})
-    dict_data = juso_api.get_data(['roadAddrPart1'])
-    return dict_data['roadAddrPart1']
+    dict_data = juso_api.get_data(['roadAddr'])
+    if not dict_data:
+        return {}
+
+    return dict_data[0]
 
 
-def lotnum_to_roadname(lot_num, building_nm):
-    juso_api.get_new_data({'keyword': f'{lot_num} {building_nm}'})
-    dict_data = juso_api.get_data(['roadAddrPart1'])
-    return dict_data['roadAddrPart1']
+def lotnum_to_roadname(umd, lot_num, building_nm):
+    juso_api.get_new_data({'keyword': f'{umd} {lot_num} {building_nm}'})
+    dict_data = juso_api.get_data(['roadAddr'])
+    if not dict_data:
+        return {}
+
+    return dict_data[0]
 
 
 #test code
@@ -38,16 +44,12 @@ if __name__ == '__main__':
     def get_roadnm(_):
         global entry, label
 
-        data = None
-        if list(entry.get().split())[0].isdecimal():
-            data = lotnum_to_roadname(*list(entry.get().split()))
-        else:
-            data = lotaddr_to_roadname(entry.get())
+        data = lotaddr_to_roadname(entry.get())
 
         if not data:
             return
 
-        label['text'] = data[0]
+        label['text'] = data['roadAddr']
 
     window = Tk()
     window.title('지번 주소 도로명 주소로 변환 테스트')
