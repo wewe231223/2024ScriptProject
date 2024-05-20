@@ -85,16 +85,15 @@ class ApiData:
                 if not key or not value:
                     continue
 
-                value_remove_all = re.sub(r"\s", "", value)
-                if value_remove_all != '':
-                    string += f'{key} : {value}\n'
+                value = re.sub(r"\s", "", value)
+                string += f'{key} : {value}\n'
             strings.append(string)
         return strings
 
     def get_item_tags(self):
         return self.data_tags
 
-    def get_data(self, tags=[], type_func=None):
+    def get_data(self, tags=[]):
         if not self.api_data:
             self.get_response()
             self.extract_data_root_child()
@@ -102,14 +101,16 @@ class ApiData:
         if not tags:
             return self.api_data
 
-        rt_data = {}
-        for tag in tags:
-            rt_data[tag] = []
-            for data in self.api_data:
-                if type_func:
-                    rt_data[tag].append(type_func(data[tag]))
-                else:
-                    rt_data[tag].append(data[tag])
+        rt_data = []
+        for data in self.api_data:
+            dict_data = {}
+            for tag in tags:
+                if tag not in data:
+                    print(f'not tag in api data {tag}')
+                    return []
+
+                dict_data[tag] = data[tag]
+            rt_data.append(dict_data)
 
         return rt_data
 

@@ -48,13 +48,13 @@ def get_sgg_codes(sido_str):
     region_code_api.get_new_data({'numOfRows': '1000', 'locatadd_nm': sido_str}, True)
     region_data = region_code_api.get_data(['locatadd_nm', 'sgg_cd'])
     sgg_codes = {}
-    for locate_name, sgg_cd in zip(*list(region_data.values())):
-        split_names = list(locate_name.split())
+    for dict_data in region_data:
+        split_names = dict_data['locatadd_nm'].split()
         if len(split_names) < 2:
             continue
 
         locate_name = split_names[1]
-        sgg_codes[locate_name] = sgg_cd
+        sgg_codes[locate_name] = dict_data['sgg_cd']
 
     region_code_api.clear_data()
     return sgg_codes
@@ -68,13 +68,13 @@ def get_umd_codes(sido_str, sgg_str):
     region_data = region_code_api.get_data(['locatadd_nm', 'umd_cd'])
 
     umd_codes = {}
-    for locate_name, sgg_cd in zip(*list(region_data.values())):
-        split_names = list(locate_name.split())
+    for dict_data in region_data:
+        split_names = dict_data['locatadd_nm'].split()
         if len(split_names) < 3:
             continue
 
         locate_name = split_names[2]
-        umd_codes[locate_name] = sgg_cd
+        umd_codes[locate_name] = dict_data['umd_cd']
 
     region_code_api.clear_data()
     return umd_codes
@@ -89,13 +89,13 @@ def get_ri_codes(sido_str, sgg_str, umd_str):
                                  True)
     region_data = region_code_api.get_data(['locatadd_nm', 'ri_cd'])
     ri_codes = {}
-    for locate_name, sgg_cd in zip(*list(region_data.values())):
-        split_names = list(locate_name.split())
-        if len(split_names) < 4:
+    for dict_data in region_data:
+        split_names = dict_data['locatadd_nm'].split()
+        if len(split_names) < 3:
             continue
 
-        locate_name = split_names[3]
-        ri_codes[locate_name] = sgg_cd
+        locate_name = split_names[2]
+        ri_codes[locate_name] = dict_data['ri_cd']
 
     region_code_api.clear_data()
     return ri_codes
