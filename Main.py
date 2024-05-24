@@ -206,8 +206,10 @@ class MainGUI:
 
         self.result_vertical_scrollbar = Scrollbar(self.result_canvas,orient='vertical',command=self.result_canvas.yview)
         self.result_vertical_scrollbar.pack(side='right', fill='y')
+        self.window.bind("<MouseWheel>", lambda event: self.result_canvas.yview_scroll(int(-1*(event.delta/120)), "units"))
 
         self.result_canvas.configure(yscrollcommand=self.result_vertical_scrollbar.set)
+
 
 
         self.content_frame.tkraise()
