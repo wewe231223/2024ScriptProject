@@ -72,8 +72,8 @@ class MainGUI:
         umd_code = self.umd_codes[umd]
 
         self.result_canvas.delete('all')
-        data_list = get_umd_apart_trade_data(self.region_code, 202010, umd_code)
-        for data in data_list:
+        self.data_list = get_umd_apart_trade_data(self.region_code, 202010, umd_code)
+        for data in self.data_list:
             search_keyword = f'{data["법정동"]} {data["지번"]} {data["아파트"]}'
             locate = lotaddr_to_roadname(search_keyword)
             if not locate:
@@ -88,13 +88,21 @@ class MainGUI:
         umd_x, umd_y = kakaomap_xy_search(sido + ' ' + sgg + ' ' + umd)
         self.map.set_position(umd_y, umd_x)
         self.favorite_buttons = []
+        self.favorite_button_buffer = []
 
-        for data_id, data in enumerate(data_list):
+        for value in self.favorite_buffer.values():
+            self.favorite_database.append(value)
+            print(value)
+
+        self.favorite_buffer = {}
+
+        for data_id, data in enumerate(self.data_list):
             b = Button(self.result_canvas, text=f'즐겨찾기에 등록 : {data["아파트"]} {data["거래금액"]}', command=lambda index = data_id: self.favorite_invoke(index))
 
             self.result_canvas.create_window(600, 100 + 1200 * data_id, window=b)
             self.favorite_buttons.append(b)
             self.favorite_button_buffer.append((data["아파트"], data["거래금액"]))
+
 
             for line, ( key, value ) in enumerate(data.items()):
                 self.result_canvas.create_text(0, 100 + ( 30 * line ) + 1200 * data_id, text=f'{key}: {value}', font=('Arial', 20),anchor='w')
@@ -103,10 +111,11 @@ class MainGUI:
     def favorite_invoke(self,index):
         if self.favorite_buttons[index].cget('text') == '즐겨찾기에 등록됨':
             self.favorite_buttons[index].config(text=f'즐겨찾기에 등록 : {self.favorite_button_buffer[index][0]} {self.favorite_button_buffer[index][1]}',bg='white')
+            del self.favorite_buffer[index]
         else:
             self.favorite_buttons[index].config(text='즐겨찾기에 등록됨',bg='yellow')
+            self.favorite_buffer[index] = self.data_list[index]
 
-        pass
 
     def __init__(self):
         self.window = Tk()
@@ -138,6 +147,8 @@ class MainGUI:
         self.btn_favorites.pack(fill='x')
         self.favorite_buttons = []
         self.favorite_button_buffer = []
+        self.favorite_buffer = {}
+        self.favorite_database = []
 
         # 우측 콘텐츠 프레임
         self.content_frame = Frame(self.window)
