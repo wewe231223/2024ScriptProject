@@ -74,7 +74,7 @@ class MainGUI:
         self.listbox.delete(0,END)
         data_list = get_umd_apart_trade_data(self.region_code, 202010, umd_code)
         for data in data_list:
-            search_keyword = f'{data['법정동']} {data['지번']} {data['아파트']}'
+            search_keyword = f'{data["법정동"]} {data["지번"]} {data["아파트"]}'
             locate = lotaddr_to_roadname(search_keyword)
             if not locate:
                 continue
@@ -88,9 +88,7 @@ class MainGUI:
         umd_x, umd_y = kakaomap_xy_search(sido + ' ' + sgg + ' ' + umd)
         self.map.set_position(umd_y, umd_x)
 
-        text = get_apart_info(data_list)
-        for t in text:
-            self.listbox.insert(END,t)
+
 
     def __init__(self):
         self.window = Tk()
@@ -169,29 +167,32 @@ class MainGUI:
         # 검색 결과 리스트박스와 스크롤바
 
         self.result_frame = Frame(self.content_frame)
-        self.result_frame.pack(fill='both', expand=True)
-
-        self.listbox = Listbox(self.result_frame)
-        self.listbox.pack(side='left',fill='both', expand=True)
-
-        self.scrollbar = Scrollbar(self.result_frame, orient='vertical',command=self.listbox.yview)
-        self.scrollbar.pack(side='right',fill='y')
-        self.listbox.config(yscrollcommand=self.scrollbar.set)
+        self.result_frame.pack(fill='both',expand=True)
 
 
+        self.result_canvas = Canvas(self.result_frame,bg='white',width=100,height=100)
+        self.result_canvas.pack(side=LEFT, fill='both', expand=True)
 
-        self.graph_frame = Frame(self.window)
-        self.graph_frame.grid(row=0,column=1,rowspan=3,sticky='nsew')
+        self.result_vertical_scrollbar = Scrollbar(self.result_canvas,orient='vertical',command=self.result_canvas.yview)
+        self.result_vertical_scrollbar.pack(side='right', fill='y')
 
+        self.result_canvas.configure(yscrollcommand=self.result_vertical_scrollbar.set)
 
+        for i in range(100):
+            self.result_canvas.create_text(0 ,i * 100, text=f"Item {i + 1}", font=("Arial", 20))
+            self.result_canvas.create_text(0 , 30 + i * 100,text=f"Item {i+1} Content",font=("Arial",20))
 
-
-
+        self.result_canvas.configure(scrollregion=self.result_canvas.bbox('all'))
 
         self.content_frame.tkraise()
 
+        for i in range(10):
+            b = Button(self.result_canvas,text=f'즐겨찾기 {i+1}')
+            self.result_canvas.create_window(100,100 + i * 100,window=b)
+
+
         self.right_button_frame = Frame(self.window ,width=300)
-        self.right_button_frame.grid(row=0,column=2,rowspan=2,sticky='nsew',padx=30,pady=30)
+        self.right_button_frame.grid(row=0,column=3,rowspan=2,sticky='nsew',padx=30,pady=30)
 
         self.telegram_image = PhotoImage(file='Resources/Telegram.png')
         self.telegram_button = Button(self.right_button_frame,image=self.telegram_image,command=self.open_telegram)
