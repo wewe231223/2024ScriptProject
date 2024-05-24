@@ -71,7 +71,7 @@ class MainGUI:
 
         umd_code = self.umd_codes[umd]
 
-        self.listbox.delete(0,END)
+        self.result_canvas.delete('all')
         data_list = get_umd_apart_trade_data(self.region_code, 202010, umd_code)
         for data in data_list:
             search_keyword = f'{data["법정동"]} {data["지번"]} {data["아파트"]}'
@@ -87,8 +87,26 @@ class MainGUI:
 
         umd_x, umd_y = kakaomap_xy_search(sido + ' ' + sgg + ' ' + umd)
         self.map.set_position(umd_y, umd_x)
+        self.favorite_buttons = []
 
+        for data_id, data in enumerate(data_list):
+            b = Button(self.result_canvas, text=f'즐겨찾기에 등록 : {data["아파트"]} {data["거래금액"]}', command=lambda index = data_id: self.favorite_invoke(index))
 
+            self.result_canvas.create_window(600, 100 + 1200 * data_id, window=b)
+            self.favorite_buttons.append(b)
+            self.favorite_button_buffer.append((data["아파트"], data["거래금액"]))
+
+            for line, ( key, value ) in enumerate(data.items()):
+                self.result_canvas.create_text(0, 100 + ( 30 * line ) + 1200 * data_id, text=f'{key}: {value}', font=('Arial', 20),anchor='w')
+        self.result_canvas.configure(scrollregion=self.result_canvas.bbox('all'))
+
+    def favorite_invoke(self,index):
+        if self.favorite_buttons[index].cget('text') == '즐겨찾기에 등록됨':
+            self.favorite_buttons[index].config(text=f'즐겨찾기에 등록 : {self.favorite_button_buffer[index][0]} {self.favorite_button_buffer[index][1]}',bg='white')
+        else:
+            self.favorite_buttons[index].config(text='즐겨찾기에 등록됨',bg='yellow')
+
+        pass
 
     def __init__(self):
         self.window = Tk()
@@ -118,6 +136,8 @@ class MainGUI:
 
         self.btn_favorites = Button(self.menu_frame, text="즐겨찾기", bg='white', fg='black', command=self.show_favorites, height=5)
         self.btn_favorites.pack(fill='x')
+        self.favorite_buttons = []
+        self.favorite_button_buffer = []
 
         # 우측 콘텐츠 프레임
         self.content_frame = Frame(self.window)
@@ -178,17 +198,10 @@ class MainGUI:
 
         self.result_canvas.configure(yscrollcommand=self.result_vertical_scrollbar.set)
 
-        for i in range(100):
-            self.result_canvas.create_text(0 ,i * 100, text=f"Item {i + 1}", font=("Arial", 20))
-            self.result_canvas.create_text(0 , 30 + i * 100,text=f"Item {i+1} Content",font=("Arial",20))
-
-        self.result_canvas.configure(scrollregion=self.result_canvas.bbox('all'))
 
         self.content_frame.tkraise()
 
-        for i in range(10):
-            b = Button(self.result_canvas,text=f'즐겨찾기 {i+1}')
-            self.result_canvas.create_window(100,100 + i * 100,window=b)
+
 
 
         self.right_button_frame = Frame(self.window ,width=300)
