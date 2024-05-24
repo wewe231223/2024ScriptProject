@@ -116,6 +116,23 @@ class MainGUI:
             self.favorite_buttons[index].config(text='즐겨찾기에 등록됨',bg='yellow')
             self.favorite_buffer[index] = self.data_list[index]
 
+    def sort_invoke(self,event):
+        match self.sort_option.get():
+            case 'Option 1':
+                pass
+            case 'Option 2':
+                pass
+            case 'Option 3':
+                pass
+            case 'Option 4':
+                pass
+            case 'Option 5':
+                pass
+            case 'Option 6':
+                pass
+            case _:
+                raise Exception("Somthing went wrong")
+
 
     def __init__(self):
         self.window = Tk()
@@ -185,6 +202,7 @@ class MainGUI:
 
         self.sort_option = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5', 'Option 6']
         self.sort_option = ttk.Combobox(self.search_frame,values=self.sort_option,height=10, width=30)
+        self.sort_option.bind("<<ComboboxSelected>>", self.sort_invoke)
         self.sort_option.grid(row=1, column=2)
 
         self.lbl_month = Label(self.search_frame, text="월별 거래일자")
@@ -211,8 +229,19 @@ class MainGUI:
         self.result_canvas.configure(yscrollcommand=self.result_vertical_scrollbar.set)
 
 
+        self.favorite_frame = Frame(self.window)
+        self.favorite_frame.grid(row=0, column=1, rowspan=4, sticky='nsew')
+
+
+
+        self.graph_frame = Frame(self.window)
+        self.graph_frame.grid(row=0, column=1, rowspan=4, sticky='nsew')
+
 
         self.content_frame.tkraise()
+
+
+
 
 
 
