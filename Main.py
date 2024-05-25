@@ -25,17 +25,25 @@ class MainGUI:
     def search_apartments(self):
         self.reset_button_colors()
         self.btn_search.config(bg='red', fg='white')
+        self.window.bind("<MouseWheel>", lambda event: self.result_canvas.yview_scroll(int(-1*(event.delta/120)), "units"))
         self.content_frame.tkraise()
+
 
     def show_graph(self):
         self.reset_button_colors()
         self.btn_graph.config(bg='red', fg='white')
-        self.display_bar_graph(self.graph_canvas, self.data_list)
+        if self.data_list:
+            self.display_bar_graph(self.graph_canvas, self.data_list)
         self.graph_frame.tkraise()
 
     def show_favorites(self):
         self.reset_button_colors()
         self.btn_favorites.config(bg='red', fg='white')
+        if self.favorite_database:
+            self.display_result(self.favorite_database, self.favorite_canvas)
+            self.window.bind("<MouseWheel>",lambda event: self.favorite_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units"))
+
+        self.favorite_frame.tkraise()
 
     def open_telegram(self):
         pass
@@ -91,26 +99,16 @@ class MainGUI:
 
         umd_x, umd_y = kakaomap_xy_search(sido + ' ' + sgg + ' ' + umd)
         self.map.set_position(umd_y, umd_x)
-        self.favorite_buttons = []
 
 
         for value in self.favorite_buffer.values():
             self.favorite_database.append(value)
-            print(value)
-
-        self.favorite_buffer = {}
 
         print(self.data_list)
 
-        for data_id, data in enumerate(self.data_list):
-            b = Button(self.result_canvas, text=f'즐겨찾기에 등록 : {data["아파트"]} {data["거래금액"]}', command=lambda index = data_id: self.favorite_invoke(index))
+        self.favorite_buffer = {}
+        self.display_result(self.data_list)
 
-            self.result_canvas.create_window(600, 100 + 1200 * data_id, window=b)
-            self.favorite_buttons.append(b)
-
-            for line, ( key, value ) in enumerate(data.items()):
-                self.result_canvas.create_text(0, 100 + ( 30 * line ) + 1200 * data_id, text=f'{key}: {value}', font=('Arial', 20),anchor='w')
-        self.result_canvas.configure(scrollregion=self.result_canvas.bbox('all'))
 
     def favorite_invoke(self, index):
         if self.favorite_buttons[index].cget('text') == '즐겨찾기에 등록됨':
@@ -120,13 +118,13 @@ class MainGUI:
             self.favorite_buttons[index].config(text='즐겨찾기에 등록됨',bg='yellow')
             self.favorite_buffer[index] = self.data_list[index]
 
-    def sort_invoke(self,event):
+    def sort_invoke(self, event):
 
-        self.favorite_buttons = []
+
 
 
         match self.sort_option.get():
-            case 'Option 1':
+            case '거래 금액 순':
                 sorted_by_price = sorted(self.data_list, key=lambda x: x['거래금액'])
                 self.display_result(sorted_by_price)
 
@@ -145,19 +143,35 @@ class MainGUI:
             case _:
                 raise Exception("Something went wrong")
 
-    def display_result(self, data):
+    def display_result(self,data,canvas = None):
         self.favorite_buttons = []
 
-        self.result_canvas.delete('all')
-        for data_id, data in enumerate(data):
-            b = Button(self.result_canvas, text=f'즐겨찾기에 등록 : {data["아파트"]} {data["거래금액"]}',command=lambda index=data_id: self.favorite_invoke(index))
-            self.result_canvas.create_window(600,100 + 1200 * data_id, window=b)
-            self.favorite_buttons.append(b)
+        if canvas is None:
+            self.result_canvas.delete('all')
+            for data_id, data in enumerate(data):
+                b = Button(self.result_canvas, text=f'즐겨찾기에 등록 : {data["아파트"]} {data["거래금액"]}',command=lambda index=data_id: self.favorite_invoke(index))
+                self.result_canvas.create_window(600,100 + 1200 * data_id, window=b)
+                self.favorite_buttons.append(b)
 
-            for line, (key, value) in enumerate(data.items()):
-                self.result_canvas.create_text(0, 100 + (30 * line) + 1200 * data_id, text=f'{key}: {value}',font=('Arial', 20), anchor='w')
+                for line, (key, value) in enumerate(data.items()):
+                    self.result_canvas.create_text(0, 100 + (30 * line) + 1200 * data_id, text=f'{key}: {value}',font=('Arial', 20), anchor='w')
 
-        self.result_canvas.configure(scrollregion=self.result_canvas.bbox('all'))
+            self.result_canvas.configure(scrollregion=self.result_canvas.bbox('all'))
+        else:
+            canvas.delete('all')
+            for data_id, data in enumerate(data):
+                b = Button(canvas, text=f'즐겨찾기에 등록 : {data["아파트"]} {data["거래금액"]}',
+                           command=lambda index=data_id: self.favorite_invoke(index))
+                canvas.create_window(600, 100 + 1200 * data_id, window=b)
+                self.favorite_buttons.append(b)
+
+                for line, (key, value) in enumerate(data.items()):
+                    canvas.create_text(0, 100 + (30 * line) + 1200 * data_id, text=f'{key}: {value}',
+                                                   font=('Arial', 20), anchor='w')
+
+            canvas.configure(scrollregion= canvas.bbox('all'))
+
+
 
     def display_bar_graph(self,canvas,data_list):
         # 데이터 리스트에서 아파트 이름과 거래금액을 추출
@@ -245,7 +259,7 @@ class MainGUI:
         self.lbl_sort = Label(self.search_frame, text="정렬 기준")
         self.lbl_sort.grid(row=1, column=0)
 
-        self.sort_option = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5', 'Option 6']
+        self.sort_option = ['거래 금액 순', 'Option 2', 'Option 3', 'Option 4', 'Option 5', 'Option 6']
         self.sort_option = ttk.Combobox(self.search_frame,values=self.sort_option,height=10, width=30)
         self.sort_option.bind("<<ComboboxSelected>>", self.sort_invoke)
         self.sort_option.grid(row=1, column=2)
@@ -276,7 +290,13 @@ class MainGUI:
 
         self.favorite_frame = Frame(self.window)
         self.favorite_frame.grid(row=0, column=1, rowspan=4, sticky='nsew')
+        self.favorite_canvas = Canvas(self.favorite_frame, bg='white', width=100, height=100)
+        self.favorite_canvas.pack(side=LEFT, fill='both', expand=True)
 
+        self.favorite_vertical_scrollbar = Scrollbar(self.favorite_canvas, orient='vertical', command=self.favorite_canvas.yview)
+        self.favorite_vertical_scrollbar.pack(side='right', fill='y')
+
+        self.favorite_canvas.configure(yscrollcommand=self.favorite_vertical_scrollbar.set)
 
 
         self.graph_frame = Frame(self.window)
