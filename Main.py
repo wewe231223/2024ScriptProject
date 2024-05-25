@@ -12,6 +12,9 @@ from kakao_api import *
 
 from tkintermapview import TkinterMapView
 
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
 
 class MainGUI:
     def reset_button_colors(self):
@@ -27,6 +30,7 @@ class MainGUI:
     def show_graph(self):
         self.reset_button_colors()
         self.btn_graph.config(bg='red', fg='white')
+        self.display_bar_graph(self.graph_canvas, self.data_list)
         self.graph_frame.tkraise()
 
     def show_favorites(self):
@@ -88,7 +92,7 @@ class MainGUI:
         umd_x, umd_y = kakaomap_xy_search(sido + ' ' + sgg + ' ' + umd)
         self.map.set_position(umd_y, umd_x)
         self.favorite_buttons = []
-        self.favorite_button_buffer = []
+
 
         for value in self.favorite_buffer.values():
             self.favorite_database.append(value)
@@ -96,29 +100,37 @@ class MainGUI:
 
         self.favorite_buffer = {}
 
+        print(self.data_list)
+
         for data_id, data in enumerate(self.data_list):
             b = Button(self.result_canvas, text=f'즐겨찾기에 등록 : {data["아파트"]} {data["거래금액"]}', command=lambda index = data_id: self.favorite_invoke(index))
 
             self.result_canvas.create_window(600, 100 + 1200 * data_id, window=b)
             self.favorite_buttons.append(b)
-            self.favorite_button_buffer.append((data["아파트"], data["거래금액"]))
-
 
             for line, ( key, value ) in enumerate(data.items()):
                 self.result_canvas.create_text(0, 100 + ( 30 * line ) + 1200 * data_id, text=f'{key}: {value}', font=('Arial', 20),anchor='w')
         self.result_canvas.configure(scrollregion=self.result_canvas.bbox('all'))
 
-    def favorite_invoke(self,index):
+    def favorite_invoke(self, index):
         if self.favorite_buttons[index].cget('text') == '즐겨찾기에 등록됨':
-            self.favorite_buttons[index].config(text=f'즐겨찾기에 등록 : {self.favorite_button_buffer[index][0]} {self.favorite_button_buffer[index][1]}',bg='white')
+            self.favorite_buttons[index].config(text=f'즐겨찾기에 등록 : {self.favorite_buffer[index]["아파트"]} {self.favorite_buffer[index]["거래금액"]}',bg='white')
             del self.favorite_buffer[index]
         else:
             self.favorite_buttons[index].config(text='즐겨찾기에 등록됨',bg='yellow')
             self.favorite_buffer[index] = self.data_list[index]
 
     def sort_invoke(self,event):
+
+        self.favorite_buttons = []
+
+
         match self.sort_option.get():
             case 'Option 1':
+                sorted_by_price = sorted(self.data_list, key=lambda x: x['거래금액'])
+                self.display_result(sorted_by_price)
+
+
                 pass
             case 'Option 2':
                 pass
@@ -131,7 +143,41 @@ class MainGUI:
             case 'Option 6':
                 pass
             case _:
-                raise Exception("Somthing went wrong")
+                raise Exception("Something went wrong")
+
+    def display_result(self, data):
+        self.favorite_buttons = []
+
+        self.result_canvas.delete('all')
+        for data_id, data in enumerate(data):
+            b = Button(self.result_canvas, text=f'즐겨찾기에 등록 : {data["아파트"]} {data["거래금액"]}',command=lambda index=data_id: self.favorite_invoke(index))
+            self.result_canvas.create_window(600,100 + 1200 * data_id, window=b)
+            self.favorite_buttons.append(b)
+
+            for line, (key, value) in enumerate(data.items()):
+                self.result_canvas.create_text(0, 100 + (30 * line) + 1200 * data_id, text=f'{key}: {value}',font=('Arial', 20), anchor='w')
+
+        self.result_canvas.configure(scrollregion=self.result_canvas.bbox('all'))
+
+    def display_bar_graph(self,canvas,data_list):
+        # 데이터 리스트에서 아파트 이름과 거래금액을 추출
+        apartments = [data['아파트'] for data in data_list]
+        prices = [int(data['거래금액'].replace(',', '')) for data in data_list]  # 거래금액을 정수로 변환
+
+        # matplotlib figure 생성
+        fig = plt.Figure(figsize=(10, 5), dpi=100)
+        plt.rcParams["font.family"] = 'Malgun Gothic'
+        ax = fig.add_subplot(111)
+
+        # 막대그래프 그리기
+        ax.bar(apartments, prices)
+        ax.set_xlabel('아파트')
+        ax.set_ylabel('거래금액')
+        ax.set_title('아파트별 거래금액')
+
+        # tkinter canvas에 그래프 추가
+        bar1 = FigureCanvasTkAgg(fig, canvas)
+        bar1.get_tk_widget().pack(side='left', fill='both', expand=True)
 
 
     def __init__(self):
@@ -163,7 +209,6 @@ class MainGUI:
         self.btn_favorites = Button(self.menu_frame, text="즐겨찾기", bg='white', fg='black', command=self.show_favorites, height=5)
         self.btn_favorites.pack(fill='x')
         self.favorite_buttons = []
-        self.favorite_button_buffer = []
         self.favorite_buffer = {}
         self.favorite_database = []
 
@@ -236,6 +281,8 @@ class MainGUI:
 
         self.graph_frame = Frame(self.window)
         self.graph_frame.grid(row=0, column=1, rowspan=4, sticky='nsew')
+        self.graph_canvas = Canvas(self.graph_frame, bg='white', width=100, height=100)
+        self.graph_canvas.pack(side=LEFT, fill='both', expand=True)
 
 
         self.content_frame.tkraise()
