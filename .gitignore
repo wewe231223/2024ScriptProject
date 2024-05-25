@@ -4,3 +4,5 @@
 *.xml
 *.iml
 *.pyc
+__pycache__/apartment_data.cpython-312.pyc
+*.pyc
