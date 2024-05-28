@@ -51,6 +51,19 @@ class MainGUI:
     def send_email(self):
         pass
 
+    def get_ym(self):
+        year_str = self.year_menu.get()[:-1]
+        month_str = self.month_menu.get()[:-1]
+
+        if year_str == '' or month_str == '':
+            return "200601"
+
+        if len(month_str) == 1:
+            month_str = '0'+month_str
+
+        return year_str + month_str
+
+
     def sido_invoke(self,event):
         sido = self.option_menu_sido.get()
         dict_data = get_sgg_codes(sido)
@@ -84,7 +97,7 @@ class MainGUI:
         umd_code = self.umd_codes[umd]
 
         self.result_canvas.delete('all')
-        self.data_list = get_umd_apart_trade_data(self.region_code, 202010, umd_code)
+        self.data_list = get_umd_apart_trade_data(self.region_code, self.get_ym(), umd_code)
         for data in self.data_list:
             search_keyword = f'{data["법정동"]} {data["지번"]} {data["아파트"]}'
             locate = lotaddr_to_roadname(search_keyword)
@@ -267,9 +280,14 @@ class MainGUI:
         self.lbl_month = Label(self.search_frame, text="월별 거래일자")
         self.lbl_month.grid(row=2, column=0)
 
-        self.date_entry = DateEntry(self.search_frame,date_pattern = 'y-mm-dd')
-        self.date_entry.config(width=30)
-        self.date_entry.grid(row=2, column=2)
+
+        self.year_menu = ttk.Combobox(self.search_frame, values = [f'{year}년' for year in range(2006,2023)],height=10, width=30)
+        self.year_menu.grid(row=2, column=2)
+        self.year_menu.set("년도를 선택하세요")
+
+        self.month_menu = ttk.Combobox(self.search_frame, values=[f'{month}월' for month in range(1,13)],height=10, width=30)
+        self.month_menu.grid(row=2, column=3)
+        self.month_menu.set("월을 선택하세요")
 
 
         # 검색 결과 리스트박스와 스크롤바
