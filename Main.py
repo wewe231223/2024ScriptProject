@@ -138,21 +138,19 @@ class MainGUI:
 
         match self.sort_option.get():
             case '거래 금액 순':
-                sorted_by_price = sorted(self.data_list, key=lambda x: x['거래금액'])
+                sorted_by_price = sorted(self.data_list, key=lambda x: int(x['거래금액'].replace(" ","").replace(",","")))
                 self.display_result(sorted_by_price)
 
+            case '거래일 순':
+                sorted_by_date = sorted(self.data_list, key=lambda x: int(x['일']))
+                self.display_result(sorted_by_date)
 
-                pass
-            case 'Option 2':
-                pass
-            case 'Option 3':
-                pass
-            case 'Option 4':
-                pass
-            case 'Option 5':
-                pass
-            case 'Option 6':
-                pass
+            case '전용 면적 순':
+                sorted_by_area = sorted(self.data_list, key=lambda x: float(x['전용면적']))
+                self.display_result(sorted_by_area)
+            case '건축 년도 순':
+                sorted_by_year = sorted(self.data_list, key=lambda x: int(x['건축년도']))
+                self.display_result(sorted_by_year)
             case _:
                 raise Exception("Something went wrong")
 
@@ -272,7 +270,7 @@ class MainGUI:
         self.lbl_sort = Label(self.search_frame, text="정렬 기준")
         self.lbl_sort.grid(row=1, column=0)
 
-        self.sort_option = ['거래 금액 순', 'Option 2', 'Option 3', 'Option 4', 'Option 5', 'Option 6']
+        self.sort_option = ['거래 금액 순', '거래일 순', '전용 면적 순', '건축 년도 순']
         self.sort_option = ttk.Combobox(self.search_frame,values=self.sort_option,height=10, width=30)
         self.sort_option.bind("<<ComboboxSelected>>", self.sort_invoke)
         self.sort_option.grid(row=1, column=2)
