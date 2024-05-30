@@ -28,11 +28,11 @@ class MainGUI:
         self.window.bind("<MouseWheel>", lambda event: self.result_canvas.yview_scroll(int(-1*(event.delta/120)), "units"))
         self.content_frame.tkraise()
 
-
     def show_graph(self):
         self.reset_button_colors()
         self.btn_graph.config(bg='red', fg='white')
         if self.data_list:
+            self.graph_canvas.delete('all')
             self.display_bar_graph(self.graph_canvas, self.data_list)
         self.graph_frame.tkraise()
 
@@ -56,13 +56,12 @@ class MainGUI:
         month_str = self.month_menu.get()[:-1]
 
         if year_str == '' or month_str == '':
-            return "200601"
+            return "202405"
 
         if len(month_str) == 1:
             month_str = '0'+month_str
 
         return year_str + month_str
-
 
     def sido_invoke(self,event):
         sido = self.option_menu_sido.get()
@@ -113,15 +112,11 @@ class MainGUI:
         umd_x, umd_y = kakaomap_xy_search(sido + ' ' + sgg + ' ' + umd)
         self.map.set_position(umd_y, umd_x)
 
-
         for value in self.favorite_buffer.values():
             self.favorite_database.append(value)
 
-        print(self.data_list)
-
         self.favorite_buffer = {}
         self.display_result(self.data_list)
-
 
     def favorite_invoke(self, index):
         if self.favorite_buttons[index].cget('text') == '즐겨찾기에 등록됨':
@@ -132,10 +127,6 @@ class MainGUI:
             self.favorite_buffer[index] = self.data_list[index]
 
     def sort_invoke(self, event):
-
-
-
-
         match self.sort_option.get():
             case '거래 금액 순':
                 sorted_by_price = sorted(self.data_list, key=lambda x: int(x['거래금액'].replace(" ","").replace(",","")))
@@ -182,8 +173,6 @@ class MainGUI:
 
             canvas.configure(scrollregion= canvas.bbox('all'))
 
-
-
     def display_bar_graph(self,canvas,data_list):
         # 데이터 리스트에서 아파트 이름과 거래금액을 추출
         apartments = [data['아파트'] for data in data_list]
@@ -203,7 +192,6 @@ class MainGUI:
         # tkinter canvas에 그래프 추가
         bar1 = FigureCanvasTkAgg(fig, canvas)
         bar1.get_tk_widget().pack(side='left', fill='both', expand=True)
-
 
     def __init__(self):
         self.window = Tk()
@@ -279,7 +267,7 @@ class MainGUI:
         self.lbl_month.grid(row=2, column=0)
 
 
-        self.year_menu = ttk.Combobox(self.search_frame, values = [f'{year}년' for year in range(2006,2023)],height=10, width=30)
+        self.year_menu = ttk.Combobox(self.search_frame, values = [f'{year}년' for year in range(2006,2024+1)],height=10, width=30)
         self.year_menu.grid(row=2, column=2)
         self.year_menu.set("년도를 선택하세요")
 
@@ -314,20 +302,12 @@ class MainGUI:
 
         self.favorite_canvas.configure(yscrollcommand=self.favorite_vertical_scrollbar.set)
 
-
         self.graph_frame = Frame(self.window)
         self.graph_frame.grid(row=0, column=1, rowspan=4, sticky='nsew')
         self.graph_canvas = Canvas(self.graph_frame, bg='white', width=100, height=100)
         self.graph_canvas.pack(side=LEFT, fill='both', expand=True)
 
-
         self.content_frame.tkraise()
-
-
-
-
-
-
 
         self.right_button_frame = Frame(self.window ,width=300)
         self.right_button_frame.grid(row=0,column=3,rowspan=2,sticky='nsew',padx=30,pady=30)
@@ -348,8 +328,6 @@ class MainGUI:
         self.window.grid_rowconfigure(0,weight=1)
         self.window.grid_columnconfigure(1,weight=3)
         self.window.grid_columnconfigure(2,weight=2)
-
-
 
         self.window.mainloop()
 
