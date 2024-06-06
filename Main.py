@@ -15,6 +15,9 @@ from tkintermapview import TkinterMapView
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+from PIL import Image, ImageTk
+from tkinter import ttk
+
 from threading import Thread
 from functools import partial
 
@@ -128,16 +131,18 @@ class MainGUI:
         return rt_data
 
     def umd_invoke(self,event):
+        pass
+
+    def search_invoke(self):
         sido = self.option_menu_sido.get()
         sgg = self.option_menu_sgg.get()
         umd = self.option_menu_umd.get()
 
         self.result_canvas.delete('all')
+        self.data_list = self.search_umd_trade_data(umd)
+        print(len(self.data_list))
 
-        data_list = self.search_umd_trade_data(umd)
-        print(len(data_list))
-
-        self.mark_apart_location(data_list)
+        self.mark_apart_location(self.data_list)
 
         umd_x, umd_y = kakaomap_xy_search(sido + ' ' + sgg + ' ' + umd)
         self.map.set_position(umd_y, umd_x)
@@ -146,7 +151,7 @@ class MainGUI:
             self.favorite_database.append(value)
 
         self.favorite_buffer = {}
-        self.display_result(data=data_list)
+        self.display_result(data=self.data_list)
 
     def favorite_invoke(self, index):
         if self.favorite_buttons[index].cget('text') == '즐겨찾기에 등록됨':
@@ -155,6 +160,10 @@ class MainGUI:
         else:
             self.favorite_buttons[index].config(text='즐겨찾기에 등록됨',bg='yellow')
             self.favorite_buffer[index] = self.data_list[index]
+
+    def favorite_remove(self, index):
+
+        pass
 
     def sort_invoke(self, event):
         match self.sort_option.get():
@@ -182,51 +191,41 @@ class MainGUI:
             self.result_canvas.delete('all')
             for data_id, data in enumerate(data):
                 b = Button(self.result_canvas, text=f'즐겨찾기에 등록 : {data["아파트"]} {data["거래금액"]}',command=lambda index=data_id: self.favorite_invoke(index))
-                self.result_canvas.create_window(600,100 + 1200 * data_id, window=b)
+                self.result_canvas.create_window(400,100 + 700 * data_id, window=b)
                 self.favorite_buttons.append(b)
 
                 for line, (key, value) in enumerate(data.items()):
-                    self.result_canvas.create_text(0, 100 + (30 * line) + 1200 * data_id, text=f'{key}: {value}',font=('Arial', 20), anchor='w')
+                    self.result_canvas.create_text(0, 100 + (30 * line) + 700 * data_id, text=f'{key}: {value}',font=('Arial', 20), anchor='w')
 
             self.result_canvas.configure(scrollregion=self.result_canvas.bbox('all'))
         else:
             canvas.delete('all')
             for data_id, data in enumerate(data):
-                b = Button(canvas, text=f'즐겨찾기에 등록 : {data["아파트"]} {data["거래금액"]}',
-                           command=lambda index=data_id: self.favorite_invoke(index))
-                canvas.create_window(600, 100 + 1200 * data_id, window=b)
+                b = Button(canvas, text=f'등록 해제 : {data["아파트"]} {data["거래금액"]}', bg='yellow',
+                           command=lambda index=data_id: self.favorite_remove(index))
+                canvas.create_window(400, 100 + 700 * data_id, window=b)
                 self.favorite_buttons.append(b)
 
                 for line, (key, value) in enumerate(data.items()):
-                    canvas.create_text(0, 100 + (30 * line) + 1200 * data_id, text=f'{key}: {value}',
-                                                   font=('Arial', 20), anchor='w')
+                    canvas.create_text(0, 100 + (30 * line) + 700 * data_id, text=f'{key}: {value}',font=('Arial', 20), anchor='w')
 
             canvas.configure(scrollregion= canvas.bbox('all'))
 
     def display_bar_graph(self,canvas,data_list):
+        print(data_list)
         # 데이터 리스트에서 아파트 이름과 거래금액을 추출
         apartments = [data['아파트'] for data in data_list]
         prices = [int(data['거래금액'].replace(',', '')) for data in data_list]  # 거래금액을 정수로 변환
 
-        # matplotlib figure 생성
-        fig = plt.Figure(figsize=(10, 5), dpi=100)
-        plt.rcParams["font.family"] = 'Malgun Gothic'
-        ax = fig.add_subplot(111)
 
-        # 막대그래프 그리기
-        ax.bar(apartments, prices)
-        ax.set_xlabel('아파트')
-        ax.set_ylabel('거래금액')
-        ax.set_title('아파트별 거래금액')
 
-        # tkinter canvas에 그래프 추가
-        bar1 = FigureCanvasTkAgg(fig, canvas)
-        bar1.get_tk_widget().pack(side='left', fill='both', expand=True)
 
     def __init__(self):
         self.window = Tk()
         self.window.title("Apartment Search App")
-        self.window.geometry("1920x1080")
+        self.window.geometry("1200x800")
+
+
 
         # 검색용 변수들
         self.region_code = ''
@@ -234,13 +233,13 @@ class MainGUI:
         self.umd_codes = {}
 
         # 좌측 메뉴 프레임
-        self.menu_frame = Frame(self.window, width=300, bg='white')
+        self.menu_frame = Frame(self.window, width=100, bg='white')
         self.menu_frame.grid(row=0, column=0, rowspan=3, sticky='nsew')
 
         # 로고 이미지
         self.logo_image = PhotoImage(file='Resources/Apartment.png')
-        self.logo_label = Label(self.menu_frame, image=self.logo_image, bg='white')
-        self.logo_label.pack(pady=10)
+        self.logo_label = Label(self.menu_frame, image=self.logo_image, bg='white',width=100,height=100)
+        self.logo_label.pack()
 
         # 메뉴 버튼들
         self.btn_search = Button(self.menu_frame, text="검색", bg='red', fg='white', command=self.search_apartments, height=5)
@@ -251,6 +250,10 @@ class MainGUI:
 
         self.btn_favorites = Button(self.menu_frame, text="즐겨찾기", bg='white', fg='black', command=self.show_favorites, height=5)
         self.btn_favorites.pack(fill='x')
+
+
+        self.data_list = []
+
         self.favorite_buttons = []
         self.favorite_buffer = {}
         self.favorite_database = []
@@ -271,38 +274,43 @@ class MainGUI:
         self.local_option_sgg = ['선택']
         self.local_option_umd = ['선택']
 
-        self.option_menu_sido = ttk.Combobox(self.search_frame,values=self.local_option_sido,height=10, width=30)
+        self.option_menu_sido = ttk.Combobox(self.search_frame,values=self.local_option_sido)
         self.option_menu_sido.bind("<<ComboboxSelected>>", self.sido_invoke)
-        self.option_menu_sido.grid(row=0, column=2)
+        self.option_menu_sido.grid(row=0, column=1)
 
-        self.option_menu_sgg = ttk.Combobox(self.search_frame,values=self.local_option_sgg,height=10, width=30)
+        self.option_menu_sgg = ttk.Combobox(self.search_frame,values=self.local_option_sgg)
         self.option_menu_sgg.bind("<<ComboboxSelected>>", self.sgg_invoke)
-        self.option_menu_sgg.grid(row=0, column=3)
+        self.option_menu_sgg.grid(row=0, column=2)
 
-        self.option_menu_umd = ttk.Combobox(self.search_frame, values=self.local_option_umd, height=10, width=30)
+        self.option_menu_umd = ttk.Combobox(self.search_frame, values=self.local_option_umd)
         self.option_menu_umd.bind("<<ComboboxSelected>>", self.umd_invoke)
-        self.option_menu_umd.grid(row=0, column=4)
+        self.option_menu_umd.grid(row=0, column=3)
 
+        image = Image.open("Resources/Search.png")
+        image = image.resize((20,20),Image.LANCZOS)
+        self.search_image = ImageTk.PhotoImage(image)
+        self.search_button = Button(self.search_frame, image= self.search_image,width=20,height=20,command=self.search_invoke)
+        self.search_button.grid(row=0, column=4)
 
         # 정렬 기준
         self.lbl_sort = Label(self.search_frame, text="정렬 기준")
         self.lbl_sort.grid(row=1, column=0)
 
         self.sort_option = ['거래 금액 순', '거래일 순', '전용 면적 순', '건축 년도 순']
-        self.sort_option = ttk.Combobox(self.search_frame,values=self.sort_option,height=10, width=30)
+        self.sort_option = ttk.Combobox(self.search_frame,values=self.sort_option)
         self.sort_option.bind("<<ComboboxSelected>>", self.sort_invoke)
-        self.sort_option.grid(row=1, column=2)
+        self.sort_option.grid(row=1, column=1)
 
         self.lbl_month = Label(self.search_frame, text="월별 거래일자")
         self.lbl_month.grid(row=2, column=0)
 
 
-        self.year_menu = ttk.Combobox(self.search_frame, values = [f'{year}년' for year in range(2006,2024+1)],height=10, width=30)
-        self.year_menu.grid(row=2, column=2)
+        self.year_menu = ttk.Combobox(self.search_frame, values = [f'{year}년' for year in range(2006,2024+1)])
+        self.year_menu.grid(row=2, column=1)
         self.year_menu.set("년도를 선택하세요")
 
-        self.month_menu = ttk.Combobox(self.search_frame, values=[f'{month}월' for month in range(1,13)],height=10, width=30)
-        self.month_menu.grid(row=2, column=3)
+        self.month_menu = ttk.Combobox(self.search_frame, values=[f'{month}월' for month in range(1,13)])
+        self.month_menu.grid(row=2, column=2)
         self.month_menu.set("월을 선택하세요")
 
 
@@ -334,8 +342,13 @@ class MainGUI:
 
         self.graph_frame = Frame(self.window)
         self.graph_frame.grid(row=0, column=1, rowspan=4, sticky='nsew')
-        self.graph_canvas = Canvas(self.graph_frame, bg='white', width=100, height=100)
-        self.graph_canvas.pack(side=LEFT, fill='both', expand=True)
+
+        self.graph_figure = plt.Figure(figsize=(10, 10), dpi=100)
+        self.graph_ax = self.graph_figure.add_subplot(111)
+        self.graph_canvas = FigureCanvasTkAgg(self.graph_figure, self.graph_frame)
+
+
+
 
         self.content_frame.tkraise()
 
@@ -350,7 +363,7 @@ class MainGUI:
         self.email_button = Button(self.right_button_frame,image=self.email_image,command=self.send_email)
         self.email_button.pack(padx=10)
 
-        self.map = TkinterMapView(self.right_button_frame,width=800, height=600, corner_radius=0)
+        self.map = TkinterMapView(self.right_button_frame,width=400, height=500, corner_radius=0)
         self.map.set_position(37.3410721,126.7326877)
         self.map.pack(pady=10)
 
