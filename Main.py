@@ -37,7 +37,6 @@ class MainGUI:
         self.reset_button_colors()
         self.btn_graph.config(bg='red', fg='white')
         if self.data_list:
-            self.graph_canvas.delete('all')
             self.display_bar_graph(self.graph_canvas, self.data_list)
         self.graph_frame.tkraise()
 
@@ -217,6 +216,20 @@ class MainGUI:
         apartments = [data['아파트'] for data in data_list]
         prices = [int(data['거래금액'].replace(',', '')) for data in data_list]  # 거래금액을 정수로 변환
 
+        if self.graph_ax:
+            self.graph_ax.clear()
+        else:
+            self.graph_ax = self.graph_figure.add_subplot(111)
+        plt.rcParams['font.family'] = 'Malgun Gothic'
+
+
+        self.graph_ax.bar(apartments, prices)
+        self.graph_ax.set_xlabel('아파트')
+        self.graph_ax.set_ylabel('거래금액')
+        self.graph_ax.set_title('아파트별 거래금액')
+
+        self.graph_canvas.draw()
+        self.graph_canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=True)
 
 
 
@@ -224,6 +237,7 @@ class MainGUI:
         self.window = Tk()
         self.window.title("Apartment Search App")
         self.window.geometry("1200x800")
+
 
 
 
@@ -344,9 +358,9 @@ class MainGUI:
         self.graph_frame.grid(row=0, column=1, rowspan=4, sticky='nsew')
 
         self.graph_figure = plt.Figure(figsize=(10, 10), dpi=100)
-        self.graph_ax = self.graph_figure.add_subplot(111)
-        self.graph_canvas = FigureCanvasTkAgg(self.graph_figure, self.graph_frame)
-
+        self.graph_canvas = FigureCanvasTkAgg(self.graph_figure, master=self.graph_frame)
+        self.graph_ax = None
+        plt.rcParams['font.family'] = 'Malgun Gothic'
 
 
 
