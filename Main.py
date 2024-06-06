@@ -15,6 +15,8 @@ from tkintermapview import TkinterMapView
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+from threading import Thread
+from functools import partial
 
 class MainGUI:
     def reset_button_colors(self):
@@ -65,39 +67,26 @@ class MainGUI:
 
     def sido_invoke(self,event):
         sido = self.option_menu_sido.get()
-        dict_data = get_sgg_codes(sido)
-        if dict_data:
-            self.region_code = sido_codes[sido]
-            self.sgg_codes = dict_data
-            self.local_option_sgg = self.local_option_sgg[:1]
-            self.local_option_sgg += list(dict_data.keys())
-            self.option_menu_sgg['values'] = self.local_option_sgg
-            self.option_menu_sgg.set(self.local_option_sgg[0])
+        self.local_option_sgg = self.local_option_sgg[:1]
+        self.local_option_sgg += get_sggs(sido)
+        self.option_menu_sgg['values'] = self.local_option_sgg
+        self.option_menu_sgg.set(self.local_option_sgg[0])
 
     def sgg_invoke(self,event):
         sido = self.option_menu_sido.get()
         sgg = self.option_menu_sgg.get()
-        self.region_code += self.sgg_codes[sgg]
-        dict_data = get_umd_codes(sido, sgg)
+        self.region_code = sgg_codes[sido][sgg]
+        sgg_full_name = sido+' '+sgg
 
-        # 읍면동 정보 불러오기 (없으면 dict_data == {})
-        if dict_data:
-            self.umd_codes = dict_data
-            self.local_option_umd = self.local_option_umd[:1]
-            self.local_option_umd += list(dict_data.keys())
-            self.option_menu_umd['values'] = self.local_option_umd
-            self.option_menu_umd.set(self.local_option_umd[0])
+        self.data_list = get_apart_trade_data(self.region_code, self.get_ym())
+        valid_names = get_valid_umd_names(self.data_list)
+        self.local_option_umd = self.local_option_umd[:1]
+        self.local_option_umd += valid_names
+        self.option_menu_umd['values'] = self.local_option_umd
+        self.option_menu_umd.set(self.local_option_umd[0])
 
-    def umd_invoke(self,event):
-        sido = self.option_menu_sido.get()
-        sgg = self.option_menu_sgg.get()
-        umd = self.option_menu_umd.get()
-
-        umd_code = self.umd_codes[umd]
-
-        self.result_canvas.delete('all')
-        self.data_list = get_umd_apart_trade_data(self.region_code, self.get_ym(), umd_code)
-        for data in self.data_list:
+    def get_xy_data_kakao(self, data_list, rt_list):
+        for data in data_list:
             search_keyword = f'{data["법정동"]} {data["지번"]} {data["아파트"]}'
             locate = lotaddr_to_roadname(search_keyword)
             if not locate:
@@ -107,7 +96,48 @@ class MainGUI:
             if not x:
                 continue
 
-            self.map.set_marker(y, x, data['아파트'])
+            rt_list.append((x, y, data['아파트']))
+
+    def mark_apart_location(self, data_list):
+        max_list_elem = 5
+        thread_lists = [data_list[i * max_list_elem:(i + 1) * max_list_elem]
+                        for i in range((len(data_list) + max_list_elem - 1) // max_list_elem)]
+        threads = []
+        xy_lists = [[] for _ in range(len(thread_lists))]
+        for i in range(len(thread_lists)):
+            threads.append(Thread(target=partial(self.get_xy_data_kakao, thread_lists[i], xy_lists[i])))
+            threads[i].start()
+
+        for t in threads:
+            t.join()
+
+        xy_list = []
+        for sub_list in xy_lists:
+            xy_list += sub_list
+
+        for x, y, apart in xy_list:
+            self.map.set_marker(y, x, apart)
+
+    def search_umd_trade_data(self, umd):
+        rt_data = []
+        for data in self.data_list:
+            if data['법정동'].strip() == umd:
+                rt_data.append(data)
+        print(len(rt_data))
+        print(rt_data)
+        return rt_data
+
+    def umd_invoke(self,event):
+        sido = self.option_menu_sido.get()
+        sgg = self.option_menu_sgg.get()
+        umd = self.option_menu_umd.get()
+
+        self.result_canvas.delete('all')
+
+        data_list = self.search_umd_trade_data(umd)
+        print(len(data_list))
+
+        self.mark_apart_location(data_list)
 
         umd_x, umd_y = kakaomap_xy_search(sido + ' ' + sgg + ' ' + umd)
         self.map.set_position(umd_y, umd_x)
@@ -116,7 +146,7 @@ class MainGUI:
             self.favorite_database.append(value)
 
         self.favorite_buffer = {}
-        self.display_result(self.data_list)
+        self.display_result(data=data_list)
 
     def favorite_invoke(self, index):
         if self.favorite_buttons[index].cget('text') == '즐겨찾기에 등록됨':
@@ -237,7 +267,7 @@ class MainGUI:
         self.lbl_search = Label(self.search_frame, text="지역으로 검색")
         self.lbl_search.grid(row=0, column=0)
 
-        self.local_option_sido = ['선택'] + list(sido_codes.keys())
+        self.local_option_sido = ['선택'] + get_sidos()
         self.local_option_sgg = ['선택']
         self.local_option_umd = ['선택']
 

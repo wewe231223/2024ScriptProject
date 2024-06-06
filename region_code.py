@@ -1,197 +1,62 @@
-from rest_apis import *
-
-query_params = {
-    'serviceKey': '4PeRdvcpIuthF6GZYn7%2BTxeUSYDgoQEP1gaFkynbIdFTJkFRx2TFi67lwYUpDU4cC5YvATmAbjH9Z%2BmtPtt%2FBQ%3D%3D',
-    'pageNo': '1',
-    'numOfRows': '',
-    'type': 'xml',
-    'locatadd_nm': ''
-}
-
-region_code_api = ApiData(
-    'http://apis.data.go.kr/1741000/StanReginCd/getStanReginCdList',
-    None,
-    query_params,
-    'row'
-)
-
-sido_codes = {
-    '서울특별시': '11',
-    '부산광역시': '21',
-    '대구광역시': '22',
-    '인천광역시': '23',
-    '광주광역시': '24',
-    '대전광역시': '25',
-    '울산광역시': '26',
-    '세종특별자치시': '29',
-    '경기도': '31',
-    '강원특별자치도': '32',
-    '충청북도': '33',
-    '충청남도': '34',
-    '전라북도': '35',
-    '전라남도': '36',
-    '경상북도': '37',
-    '경상남도': '38',
-    '제주특별자치도': '39'
-}
+def read_token(file):
+    token = file.readline().rstrip('\n')
+    s, loop = token.split()
+    return s, int(loop)
 
 
-def get_sido_codes():
-    return sido_codes
+def read_umd_token(file):
+    token = file.readline().rstrip('\n')
+    strs = list(token.split())
+    s = strs[0]+' '+strs[1]
+    loop = int(strs[-1])
+    return s, int(loop)
 
 
-def get_sgg_codes(sido_str):
-    if sido_str not in sido_codes:
-        print('not exist sido_cd')
-        return {}
-
-    region_code_api.get_new_data({'numOfRows': '1000', 'locatadd_nm': sido_str}, True)
-    region_data = region_code_api.get_data(['locatadd_nm', 'sgg_cd'])
-    sgg_codes = {}
-    for dict_data in region_data:
-        split_names = dict_data['locatadd_nm'].split()
-        if len(split_names) < 2:
-            continue
-
-        locate_name = split_names[1]
-        sgg_codes[locate_name] = dict_data['sgg_cd']
-
-    region_code_api.clear_data()
-    return sgg_codes
+def read_codes(file, n):
+    codes = { }
+    for _ in range(n):
+        code, cont = file.readline().rstrip('\n').split()
+        codes[cont] = code
+    return codes
 
 
-def get_umd_codes(sido_str, sgg_str):
-    if sido_str not in sido_codes:
-        return {}
-
-    region_code_api.get_new_data({'numOfRows': '1000', 'locatadd_nm': sido_str+' '+sgg_str}, True)
-    region_data = region_code_api.get_data(['locatadd_nm', 'umd_cd'])
-
-    umd_codes = {}
-    for dict_data in region_data:
-        split_names = dict_data['locatadd_nm'].split()
-        if len(split_names) < 3:
-            continue
-
-        locate_name = split_names[2]
-        umd_codes[locate_name] = dict_data['umd_cd']
-
-    region_code_api.clear_data()
-    return umd_codes
+def read_umds(file, n):
+    umd_names = []
+    for _ in range(n):
+        umd_names.append(file.readline().rstrip('\n'))
+    return umd_names
 
 
-def get_ri_codes(sido_str, sgg_str, umd_str):
-    if sido_str not in sido_codes:
-        return {}
-
-    region_code_api.get_new_data({'numOfRows': '1000',
-                                  'locatadd_nm': sido_str + ' ' + sgg_str+' '+umd_str},
-                                 True)
-    region_data = region_code_api.get_data(['locatadd_nm', 'ri_cd'])
-    ri_codes = {}
-    for dict_data in region_data:
-        split_names = dict_data['locatadd_nm'].split()
-        if len(split_names) < 3:
-            continue
-
-        locate_name = split_names[2]
-        ri_codes[locate_name] = dict_data['ri_cd']
-
-    region_code_api.clear_data()
-    return ri_codes
+def load_sgg_codes():
+    global sgg_codes
+    f = open('코드정보.txt')
+    _, loop = read_token(f)
+    for _ in range(loop):
+        sido, loop = read_token(f)
+        sgg_codes[sido] = read_codes(f, loop)
 
 
-def get_ri_code(sido_str, sgg_str, umd_str, ri_str):
-    region_code_api.get_new_data({'numOfRows': 1,
-                                 'locatadd_nm': sido_str + ' ' + sgg_str+' '+umd_str+' '+ri_str})
-    region_data = region_code_api.get_data(['locatadd_nm', 'region_cd'])
-    if not region_data:
-        return {}
-
-    return {region_data['locatadd_nm'][0]: region_data['region_cd'][0]}
-
-
-# test_code
-if __name__ == '__main__':
-    from tkinter import *
-
-    def dict_code_to_string(dic):
-        new_line_cnt = 2
-        if len(dic) >= 100:
-            new_line_cnt = 3
-
-        string = ''
-        cnt = 0
-        for k, v in dic.items():
-            if cnt % new_line_cnt == 0:
-                string += '\n'
-            string += f'{k} : 코드 [{v}]  '
-            cnt += 1
-        return string
-
-    def entry_sido(_):
-        global e1, sido_str, label
-        sido_str = e1.get()
-        dict_data = get_sgg_codes(sido_str)
-        if not dict_data:
-            sido_str = ''
-            label['text'] = '그런 시/도는 없습니다.'
-            return
-
-        label['text'] = '시/도 데이터 목록\n' + dict_code_to_string(dict_data)
+def load_umds():
+    global umds
+    f = open('읍면동정보.txt')
+    _, loop = read_token(f)
+    for _ in range(loop):
+        sgg, loop = read_umd_token(f)
+        umds[sgg] = read_umds(f, loop)
 
 
-    def entry_sgg(_):
-        global e2, sido_str, sgg_str, label
-        if sido_str == '':
-            label['text'] = '시/도를 먼저 입력해주세요'
-            return
+def get_sidos():
+    return list(sgg_codes.keys())
 
-        sgg_str = e2.get()
-        dict_data = get_umd_codes(sido_str, sgg_str)
-        if not dict_data:
-            sgg_str = ''
-            label['text'] = '그런 시군구는 없습니다.'
-            return
 
-        label['text'] = '시군구 데이터 목록\n' + dict_code_to_string(dict_data)
+def get_sggs(sido_nm):
+    return list(sgg_codes[sido_nm].keys())
 
-    def entry_umd(_):
-        global e3, sido_str, sgg_str, label
-        if sido_str == '' or sgg_str == '':
-            label['text'] = '시/도 와 시군구를 먼저 입력해주세요'
-            return
+def get_umds():
+    pass
 
-        umd_str = e3.get()
-        dict_data = get_ri_codes(sido_str, sgg_str, umd_str)
-        if not dict_data:
-            label['text'] = '읍면동이 없거나 해당 읍면동에 XX리 정보가 없습니다.'
-            return
 
-        label['text'] = 'XX리 데이터 목록\n' + dict_code_to_string(dict_data)
-
-    window = Tk()
-    window.geometry(f'800x600+100+100')
-    window.title('시군구, 읍면동 데이터 테스트')
-
-    label = Label(window, text='')
-    label.pack()
-
-    Label(window, text='시(특별시/광역시)/도 입력').place(x=50, y=600-100)
-    e1 = Entry(window)
-    e1.bind('<Return>', entry_sido)
-    e1.place(x=50, y=600-50)
-
-    sido_str = ''
-    Label(window, text='시군구 입력').place(x=250, y=600-100)
-    e2 = Entry(window)
-    e2.bind('<Return>', entry_sgg)
-    e2.place(x=250, y=600-50)
-
-    sgg_str = ''
-    Label(window, text='읍면동 입력').place(x=450, y=600-100)
-    e3 = Entry(window)
-    e3.bind('<Return>', entry_umd)
-    e3.place(x=450, y=600 - 50)
-
-    window.mainloop()
+sgg_codes = { }
+umds = { }
+load_sgg_codes()
+load_umds()

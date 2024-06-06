@@ -29,6 +29,9 @@ class ApiData:
     def get_root_elem(self):
         return self.root
 
+    def get_param_value(self, param_key):
+        return self.query_params[param_key]
+
     def extract_data_root_child(self):
         for item in self.root.iter(self.extract_item_tag):
             dict_data = {}
@@ -37,7 +40,23 @@ class ApiData:
                 dict_data[elem.tag] = elem.text
             self.api_data.append(dict_data)
 
-    def get_new_data(self, new_params, get_data_all=False, item_tag=''):
+    def extract_tag_items_from_api_data(self, tags=[]):
+        if not tags:
+            return self.api_data
+
+        rt_data = []
+        for data in self.api_data:
+            dict_data = {}
+            for tag in tags:
+                if tag not in data:
+                    return []
+
+                dict_data[tag] = data[tag]
+            rt_data.append(dict_data)
+
+        return rt_data
+
+    def get_new_data(self, new_params, get_data_all=False, item_tag='', tags=[]):
         self.api_data.clear()
         self.query_params['pageNo'] = '1'
         self.elem_count = 0
@@ -62,7 +81,7 @@ class ApiData:
                 page += 1
                 self.append_new_data({'pageNo': str(page)})
 
-        return self.api_data
+        return self.extract_tag_items_from_api_data(tags)
 
     def append_new_data(self, new_params, item_tag=''):
         for k, v in new_params.items():
@@ -101,18 +120,7 @@ class ApiData:
         if not tags:
             return self.api_data
 
-        rt_data = []
-        for data in self.api_data:
-            dict_data = {}
-            for tag in tags:
-                if tag not in data:
-                    print(f'not tag in api data {tag}')
-                    return []
-
-                dict_data[tag] = data[tag]
-            rt_data.append(dict_data)
-
-        return rt_data
+        return self.extract_tag_items_from_api_data(tags)
 
     def clear_data(self):
         self.api_data.clear()

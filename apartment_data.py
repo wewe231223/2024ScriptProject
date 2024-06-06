@@ -15,22 +15,28 @@ apartment_ex_api = ApiData(
     'item'
 )
 
-
-def get_apart_trade_simple_data(sgg_code, ym):
-    apartment_ex_api.get_new_data({'LAWD_CD': sgg_code, 'DEAL_YMD': ym})
-    return apartment_ex_api.get_data(['거래금액', '건축년도', '년', '월', '일', '아파트', '법정동', '지번', '층', '전용면적'])
+valid_apart_tags = ['거래금액', '거래유형', '건축년도', '년', '월', '일', '법정동', '지번', '아파트', '동', '층', '전용면적']
 
 
-def get_umd_apart_trade_data(sgg_code, ym, umd_code):
-    dict_data = apartment_ex_api.get_new_data({'LAWD_CD': sgg_code, 'DEAL_YMD': ym})
+def get_apart_trade_data(sgg_code, ym):
+    param_code = apartment_ex_api.get_param_value('LAWD_CD')
+    param_ymd = apartment_ex_api.get_param_value('DEAL_YMD')
+    dict_data = None
+    if param_code == sgg_code and param_ymd == ym:
+        dict_data = apartment_ex_api.get_data(tags=valid_apart_tags)
+    else:
+        dict_data = apartment_ex_api.get_new_data({'LAWD_CD': sgg_code, 'DEAL_YMD': ym}, get_data_all=True,
+                                                  item_tag='', tags=valid_apart_tags)
 
-    rt_data = []
+    print(len(dict_data))
+    return dict_data
+
+
+def get_valid_umd_names(dict_data):
+    rt_names = set()
     for data in dict_data:
-        if data['법정동읍면동코드'][:3] != umd_code:
-            continue
-
-        rt_data.append(data)
-    return rt_data
+        rt_names.add(data['법정동'].strip(' '))
+    return list(rt_names)
 
 
 def get_apart_info(info_data):
