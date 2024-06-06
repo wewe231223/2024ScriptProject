@@ -18,8 +18,12 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from PIL import Image, ImageTk
 from tkinter import ttk
 
+from tkinter import messagebox
+
 from threading import Thread
 from functools import partial
+
+from e_mail import mail
 
 class MainGUI:
     def reset_button_colors(self):
@@ -52,8 +56,28 @@ class MainGUI:
     def open_telegram(self):
         pass
 
+    def send_email_content(self):
+        result = []
+        for dict_item in self.favorite_database:
+            item_str = "\n".join([f"{key}: {value}" for key, value in dict_item.items()])
+            result.append(item_str)
+
+        content = "\n---------------\n".join(result)
+
+        mail(self.email_entry.get(), content)
+        messagebox.showinfo("이메일 전송 성공","이메일 전송에 성공했습니다.")
+        self.email_window.destroy()
+
     def send_email(self):
-        pass
+        if(self.email_window == None or not self.email_window.winfo_exists()):
+            self.email_window = Toplevel(self.window)
+
+            Label(self.email_window, text="즐겨찾기에 등록된 거래 기록을 입력한 메일로 전송하겠습니다.").pack()
+            self.email_entry = Entry(self.email_window, width=30)
+            self.email_entry.pack()
+
+            send_button = Button(self.email_window, text="전송하기 ", command=self.send_email_content)
+            send_button.pack()
 
     def get_ym(self):
         year_str = self.year_menu.get()[:-1]
@@ -163,6 +187,10 @@ class MainGUI:
     def favorite_remove(self, index):
 
         pass
+
+
+
+
 
     def sort_invoke(self, event):
         match self.sort_option.get():
@@ -376,6 +404,8 @@ class MainGUI:
         self.email_image = PhotoImage(file='Resources/Gmail.png')
         self.email_button = Button(self.right_button_frame,image=self.email_image,command=self.send_email)
         self.email_button.pack(padx=10)
+
+        self.email_window = None
 
         self.map = TkinterMapView(self.right_button_frame,width=400, height=500, corner_radius=0)
         self.map.set_position(37.3410721,126.7326877)
