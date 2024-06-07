@@ -3,6 +3,7 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
 from apartment_data import get_apart_trade_data_search
+from region_code import *
 
 class TelegramBot:
     def __init__(self):
@@ -41,14 +42,19 @@ class TelegramBot:
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         message_text = update.message.text.strip()
         words = message_text.split()
+        print(words)
+        print(sgg_codes)
 
         if len(words) != 5:
             await update.message.reply_text('에러: [ 시, 도 ] [ 시, 군, 구 ] [ 읍, 면, 동 ] [ 년 ] [ 월 ] 순으로 입력해주세요. 띄어쓰기를 기준으로 구분되어야 합니다.')
         elif not words[-2].isdigit() or not words[-1].isdigit():
             await update.message.reply_text('에러: [ 년 ] [ 월 ] 은 숫자로 입력해주세요.')
-            '''
-            TODO : 여기에 elif 로 유효한 주소인지 확인하고 그 다음에 밑에있는 process 함수로 넘기기
-            '''
+        elif words[0] not in sgg_codes:
+            await update.message.reply_text('시/도 정보를 다시 확인해 주세요.')
+        elif words[1] not in sgg_codes[words[0]]:
+            await update.message.reply_text(f'시/군/구 정보를 다시 확인해 주세요. ({words[0]}에 없는 행정구역입니다.)')
+        elif words[2] not in umds[f'{words[0]} {words[1]}']:
+            await update.message.reply_text(f'읍/면/동 정보를 다시 확인해 주세요. ({words[1]}에 없는 행정구역입니다.)')
         else:
             result = self.process(words)
             await update.message.reply_text(result)
