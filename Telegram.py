@@ -24,20 +24,33 @@ class TelegramBot:
         self.application.add_handler(start_handler)
 
         # 모든 메시지를 처리하기 위한 핸들러
-        echo_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, self.echo)
-        self.application.add_handler(echo_handler)
+        message_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message)
+        self.application.add_handler(message_handler)
 
         # 에러 핸들러 추가
         self.application.add_error_handler(self.error)
 
     async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        await update.message.reply_text('안녕하세요! 저는 Echo 봇입니다. 메시지를 보내주시면 제가 다시 돌려드릴게요.')
-
-    async def echo(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        await update.message.reply_text(update.message.text)
+        await update.message.reply_text('주소를 입력하면 해당 장소의 부동산 거래 기록을 알려드립니다\n')
 
     async def error(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         logging.error(f'Update {update} caused error {context.error}')
+
+    async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        message_text = update.message.text.strip()
+        words = message_text.split()
+
+        if len(words) != 5:
+            await update.message.reply_text('에러: [ 시, 도 ] [ 시, 군, 구 ] [ 읍, 면, 동 ] [ 년 ] [ 월 ] 순으로 입력해주세요.')
+        elif not words[-2].isdigit() or not words[-1].isdigit():
+            await update.message.reply_text('에러: [ 년 ] [ 월 ]은 숫자로 입력해주세요.')
+        else:
+            result = self.process(words)
+            await update.message.reply_text(result)
+
+    def process(self, words: list) -> str:
+        return "Correct!"
+
 
     def run(self):
         self.application.run_polling()
