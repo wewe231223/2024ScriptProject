@@ -1,4 +1,5 @@
 from rest_apis import *
+from region_code import *
 
 query_params = {
     'serviceKey': "4PeRdvcpIuthF6GZYn7+TxeUSYDgoQEP1gaFkynbIdFTJkFRx2TFi67lwYUpDU4cC5YvATmAbjH9Z+mtPtt/BQ==",
@@ -28,9 +29,26 @@ def get_apart_trade_data(sgg_code, ym):
         dict_data = apartment_ex_api.get_new_data({'LAWD_CD': sgg_code, 'DEAL_YMD': ym}, get_data_all=True,
                                                   item_tag='', tags=valid_apart_tags)
 
-    print(len(dict_data))
     return dict_data
 
+def get_apart_trade_data_search(sido_name, sgg_name, umd_name, y, m):
+    new_params = { 'LAWD_CD': None, 'DEAL_YMD': None }
+    code = sgg_codes[sido_name][sgg_name]
+    new_params['LAWD_CD'] = code
+    m = str(m) if len(str(m)) != 1 else '0'+str(m)
+    ym = str(y)+str(m)
+
+    if len(ym) != 6:
+        raise ValueError('년월 데이터가 6자리가 아닙니다.')
+
+    new_params['DEAL_YMD'] = ym
+    dict_data = apartment_ex_api.get_new_data(new_params=new_params, get_data_all=True, item_tag='', tags=valid_apart_tags)
+
+    rt_data = []
+    for data in dict_data:
+        if data['법정동'].strip(' ') == umd_name:
+            rt_data.append(data)
+    return rt_data
 
 def get_valid_umd_names(dict_data):
     rt_names = set()
@@ -50,50 +68,5 @@ def get_apart_info(info_data):
     return strings
 
 
-#test code
-if __name__ == '__main__':
-    import csv
-    from region_code import *
-
-    def get_code_list(sido):
-        high_region_code = sido_codes[sido]
-        low_region_codes = get_sgg_codes(sido)
-        names, codes = [], []
-        for low_name, low_code in low_region_codes.items():
-            names.append(sido+low_name)
-            codes.append(high_region_code+low_code)
-
-        return names, codes
-
-    def write_apart_data_in_file(file, region_code, ym):
-        dict_data = get_apart_trade_simple_data(region_code, ym)
-        if not dict_data:
-            return
-
-        writer = csv.DictWriter(file, fieldnames=list(dict_data[0].keys()))
-        writer.writeheader()
-        writer.writerows(dict_data)
-
-    def apartment_data_write(region_nm, region_code, filepath, start_y, start_m, end_y, end_m):
-        file_name = filepath+region_nm+' 부동산실거래자료.csv'
-        with open(file_name, 'w', encoding='utf-8-sig', newline='') as f:
-            for y in range(start_y, end_y + 1):
-                if y == start_y:
-                    for m in range(start_m, 12 + 1):
-                        write_apart_data_in_file(f, region_code, str(y)+str(m))
-                elif y == end_y:
-                    for m in range(1, end_m + 1):
-                        write_apart_data_in_file(f, region_code, str(y)+str(m))
-                else:
-                    for m in range(1, 12 + 1):
-                        write_apart_data_in_file(f, region_code, str(y)+str(m))
-
-    def write_csv_all_data(start_ym, end_ym, sido, row_code=None):
-        dir_path = './부동산자료/'
-        names, codes = get_code_list(sido)
-
-        start_y, start_m = int(start_ym[:4]), int(start_ym[4:6])
-        end_y, end_m = int(end_ym[:4]), int(end_ym[4:6])
-        for name, code in zip(names, codes):
-            apartment_data_write(name, code, dir_path, start_y, start_m, end_y, end_m)
-
+print(get_apart_trade_data_search('서울특별시', '종로구', '사직동', 2024, 2))
+print(get_apart_trade_data_search('서울특별시', '종로구', '사직동', '2024', '05'))
