@@ -3,8 +3,18 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
 class TelegramBot:
-    def __init__(self, token: str):
-        self.token = token
+    def __init__(self):
+        logging.basicConfig(
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            level=logging.INFO
+        )
+
+        # 토큰을 token.bin 파일에서 읽어옵니다
+        token_file = 'token.bin'
+
+        with open(token_file, 'rb') as file:
+             self.token = file.read().decode().strip()
+
         self.application = ApplicationBuilder().token(self.token).build()
         self._setup_handlers()
 
@@ -38,15 +48,9 @@ def read_token_from_bin_file(file_path: str) -> str:
 
 if __name__ == '__main__':
     # 로깅 설정
-    logging.basicConfig(
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        level=logging.INFO
-    )
 
-    # 토큰을 token.bin 파일에서 읽어옵니다
-    TOKEN_FILE = 'token.bin'
-    TOKEN = read_token_from_bin_file(TOKEN_FILE)
+
 
     # TelegramBot 객체 생성 및 실행
-    bot = TelegramBot(TOKEN)
+    bot = TelegramBot()
     bot.run()
