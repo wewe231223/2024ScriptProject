@@ -22,6 +22,10 @@ from tkinter import messagebox
 
 from e_mail import mail
 
+from Telegram import TelegramBot, run_telegram_bot
+import multiprocessing
+import webbrowser
+
 class MainGUI:
     def reset_button_colors(self):
         self.btn_search.config(bg='white', fg='black')
@@ -51,7 +55,7 @@ class MainGUI:
         self.favorite_frame.tkraise()
 
     def open_telegram(self):
-        pass
+        webbrowser.open("https://web.telegram.org/#/im?p=@apartment_search_bot")
 
     def send_email_content(self):
         result = []
@@ -127,7 +131,7 @@ class MainGUI:
 
         keywords = set()
         for data in data_list:
-            loc = f'{data['법정동']} {data['지번']} {data['아파트']}'
+            loc = f'{data["법정동"]} {data["지번"]} {data["아파트"]}'
             keywords.add(loc)
         keywords = list(keywords)
 
@@ -175,8 +179,9 @@ class MainGUI:
             self.favorite_buffer[index] = self.data_list[index]
 
     def favorite_remove(self, index):
+        self.favorite_buttons[index].destroy()
+        del self.favorite_database[index]
 
-        pass
 
 
 
@@ -252,11 +257,13 @@ class MainGUI:
 
     def __init__(self):
         self.window = Tk()
+        self.window.protocol("WM_DELETE_WINDOW", self.on_close)
         self.window.title("Apartment Search App")
         self.window.geometry("1200x800")
 
 
-
+        self.telegram_process = multiprocessing.Process(target= run_telegram_bot)
+        self.telegram_process.start()
 
         # 검색용 변수들
         self.region_code = ''
@@ -407,6 +414,13 @@ class MainGUI:
 
         self.window.mainloop()
 
+    def on_close(self):
+        if self.telegram_process.is_alive():
+            self.telegram_process.terminate()
+            self.telegram_process.join()
+
+        if self.window:
+            self.window.destroy()
 
 if __name__ == "__main__":
     m = MainGUI()

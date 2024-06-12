@@ -81,6 +81,12 @@ def read_token_from_bin_file(file_path: str) -> str:
     with open(file_path, 'rb') as file:
         return file.read().decode().strip()
 
+def run_telegram_bot():
+    # TelegramBot 객체 생성 및 실행
+    bot = TelegramBot()
+    bot.run()
+
+
 if __name__ == '__main__':
     # TelegramBot 객체 생성 및 실행
     bot = TelegramBot()
