@@ -36,6 +36,9 @@ class MainGUI:
         self.reset_button_colors()
         self.btn_search.config(bg='red', fg='white')
         self.window.bind("<MouseWheel>", lambda event: self.result_canvas.yview_scroll(int(-1*(event.delta/120)), "units"))
+        if self.data_list:
+            self.display_result(self.data_list)
+
         self.content_frame.tkraise()
 
     def show_graph(self):
@@ -48,14 +51,20 @@ class MainGUI:
     def show_favorites(self):
         self.reset_button_colors()
         self.btn_favorites.config(bg='red', fg='white')
+
+        for value in self.favorite_buffer.values():
+            self.favorite_database.append(value)
+        self.favorite_buffer = {}
+
         if self.favorite_database:
             self.display_result(self.favorite_database, self.favorite_canvas)
             self.window.bind("<MouseWheel>",lambda event: self.favorite_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units"))
 
+
         self.favorite_frame.tkraise()
 
     def open_telegram(self):
-        webbrowser.open("https://web.telegram.org/#/im?p=@apartment_search_bot")
+        webbrowser.open("https://web.telegram.org")
 
     def send_email_content(self):
         result = []
@@ -181,7 +190,7 @@ class MainGUI:
     def favorite_remove(self, index):
         self.favorite_buttons[index].destroy()
         del self.favorite_database[index]
-
+        self.display_result(self.favorite_database, self.favorite_canvas)
 
 
 
@@ -207,12 +216,20 @@ class MainGUI:
                 raise Exception("Something went wrong")
 
     def display_result(self,data,canvas = None):
+        if len(self.favorite_buttons) > 0:
+            for button in self.favorite_buttons:
+                button.destroy()
+
         self.favorite_buttons = []
 
         if canvas is None:
             self.result_canvas.delete('all')
             for data_id, data in enumerate(data):
-                b = Button(self.result_canvas, text=f'즐겨찾기에 등록 : {data["아파트"]} {data["거래금액"]}',command=lambda index=data_id: self.favorite_invoke(index))
+                b = None
+                if data in self.favorite_database:
+                    b = Button(self.result_canvas, text='즐겨찾기에 등록됨', bg='yellow')
+                else :
+                    b = Button(self.result_canvas, text=f'즐겨찾기에 등록 : {data["아파트"]} {data["거래금액"]}',command=lambda index=data_id: self.favorite_invoke(index))
                 self.result_canvas.create_window(400,100 + 700 * data_id, window=b)
                 self.favorite_buttons.append(b)
 
