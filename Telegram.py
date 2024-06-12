@@ -57,9 +57,12 @@ class TelegramBot:
             await update.message.reply_text(f'읍/면/동 정보를 다시 확인해 주세요. ({words[1]}에 없는 행정구역입니다.)')
         else:
             result = self.process(words)
-            if len(result ) == 0:
+            if len(result) == 0:
                 await update.message.reply_text('해당하는 데이터가 없습니다.')
             else:
+                if(len(result) > 4096):
+                    for i in range(0, len(result), 4096):
+                        await update.message.reply_text(result[i:i+4096])
                 await update.message.reply_text(result)
 
     def process(self, words: list) -> str:
