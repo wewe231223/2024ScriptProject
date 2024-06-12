@@ -278,11 +278,15 @@ class MainGUI:
         self.graph_canvas.draw()
         self.graph_canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=True)
 
-
+    def update(self):
+        current_time = time.strftime('%Y-%m-%d %H:%M:%S')
+        self.clock_lab.config(text=current_time)
+        self.window.after(1000, self.update)
 
     def __init__(self):
         self.window = Tk()
         self.window.protocol("WM_DELETE_WINDOW", self.on_close)
+        self.window.after(1000, self.update)
         self.window.title("Apartment Search App")
         self.window.geometry("1200x800")
 
@@ -417,6 +421,12 @@ class MainGUI:
 
         self.right_button_frame = Frame(self.window ,width=300)
         self.right_button_frame.grid(row=0,column=3,rowspan=2,sticky='nsew',padx=30,pady=30)
+
+        self.clock_lab = Label(self.right_button_frame, font=('Malgun Gothic', 20, 'bold'), bg='white')
+        current_time = time.strftime('%Y-%m-%d %H:%M:%S')
+        self.clock_lab.config(bg=self.window.cget('bg'))
+        self.clock_lab.config(text=current_time)
+        self.clock_lab.pack()
 
         self.telegram_image = PhotoImage(file='Resources/Telegram.png')
         self.telegram_button = Button(self.right_button_frame,image=self.telegram_image,command=self.open_telegram)
