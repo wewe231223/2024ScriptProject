@@ -59,4 +59,6 @@ def get_umds():
 sgg_codes = { }
 umds = { }
 load_sgg_codes()
+print(sgg_codes)
+
 load_umds()

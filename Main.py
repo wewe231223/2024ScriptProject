@@ -20,9 +20,6 @@ from tkinter import ttk
 
 from tkinter import messagebox
 
-from threading import Thread
-from functools import partial
-
 from e_mail import mail
 
 class MainGUI:
@@ -111,10 +108,10 @@ class MainGUI:
         self.option_menu_umd['values'] = self.local_option_umd
         self.option_menu_umd.set(self.local_option_umd[0])
 
-    def get_xy_data_kakao(self, data_list, rt_list):
-        for data in data_list:
-            search_keyword = f'{data["법정동"]} {data["지번"]} {data["아파트"]}'
-            locate = lotaddr_to_roadname(search_keyword)
+    def get_xy_data_kakao(self, search_location_strs):
+        rt_list = []
+        for s in search_location_strs:
+            locate = lotaddr_to_roadname(s)
             if not locate:
                 continue
 
@@ -122,24 +119,19 @@ class MainGUI:
             if not x:
                 continue
 
-            rt_list.append((x, y, data['아파트']))
+            rt_list.append((x, y, s.split()[2]))
+        return rt_list
 
     def mark_apart_location(self, data_list):
-        max_list_elem = 5
-        thread_lists = [data_list[i * max_list_elem:(i + 1) * max_list_elem]
-                        for i in range((len(data_list) + max_list_elem - 1) // max_list_elem)]
-        threads = []
-        xy_lists = [[] for _ in range(len(thread_lists))]
-        for i in range(len(thread_lists)):
-            threads.append(Thread(target=partial(self.get_xy_data_kakao, thread_lists[i], xy_lists[i])))
-            threads[i].start()
+        self.map.delete_all_marker()
 
-        for t in threads:
-            t.join()
+        keywords = set()
+        for data in data_list:
+            loc = f'{data['법정동']} {data['지번']} {data['아파트']}'
+            keywords.add(loc)
+        keywords = list(keywords)
 
-        xy_list = []
-        for sub_list in xy_lists:
-            xy_list += sub_list
+        xy_list = self.get_xy_data_kakao(keywords)
 
         for x, y, apart in xy_list:
             self.map.set_marker(y, x, apart)
@@ -149,8 +141,7 @@ class MainGUI:
         for data in self.data_list:
             if data['법정동'].strip() == umd:
                 rt_data.append(data)
-        print(len(rt_data))
-        print(rt_data)
+
         return rt_data
 
     def umd_invoke(self,event):
@@ -163,7 +154,6 @@ class MainGUI:
 
         self.result_canvas.delete('all')
         self.data_list = self.search_umd_trade_data(umd)
-        print(len(self.data_list))
 
         self.mark_apart_location(self.data_list)
 
@@ -239,7 +229,6 @@ class MainGUI:
             canvas.configure(scrollregion= canvas.bbox('all'))
 
     def display_bar_graph(self,canvas,data_list):
-        print(data_list)
         # 데이터 리스트에서 아파트 이름과 거래금액을 추출
         apartments = [data['아파트'] for data in data_list]
         prices = [int(data['거래금액'].replace(',', '')) for data in data_list]  # 거래금액을 정수로 변환

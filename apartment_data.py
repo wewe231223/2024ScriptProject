@@ -66,7 +66,3 @@ def get_apart_info(info_data):
         strings.append(string)
 
     return strings
-
-
-print(get_apart_trade_data_search('서울특별시', '종로구', '사직동', 2024, 2))
-print(get_apart_trade_data_search('서울특별시', '종로구', '사직동', '2024', '05'))
