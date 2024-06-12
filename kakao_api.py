@@ -1,5 +1,7 @@
 from rest_apis import *
 from urllib.parse import quote
+from lotnum_to_roadnm import *
+import os
 
 url = "https://dapi.kakao.com/v2/local/search/address.xml"
 headers = {'Authorization': 'KakaoAK '+quote('4183e7656b4d6b5d12da3a0eea9e6e20')}
@@ -13,6 +15,9 @@ kakaomap_api = ApiData(
 )
 
 
+locate_path = os.path.abspath('./Resources/locate_cache')+'\\'
+
+
 def kakaomap_search(road_name, tags=[]):
     kakaomap_api.get_new_data({'query': road_name})
     if not tags:
@@ -22,12 +27,18 @@ def kakaomap_search(road_name, tags=[]):
 
 
 def kakaomap_xy_search(road_name):
-    kakaomap_api.get_new_data({'query': road_name})
-    data = kakaomap_api.get_data(['x', 'y'])
-    if not data:
-        return None, None
+    locate = lotaddr_to_roadname(road_name)
+    if not locate:
+        return None, None, None
 
-    return float(data[0]['x']), float(data[0]['y'])
+    kakaomap_api.get_new_data({'query': locate['roadAddr']})
+    data = kakaomap_api.get_data(['x', 'y'])
+
+    if not data:
+        return None, None, None
+
+    return float(data[0]['x']), float(data[0]['y']), road_name.split()[2]
+
 
 #test code
 if __name__ == '__main__':

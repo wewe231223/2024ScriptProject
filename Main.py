@@ -1,3 +1,4 @@
+import ApiFileIO
 import os.path
 import time
 from tkinter import *
@@ -25,6 +26,11 @@ from e_mail import mail
 from Telegram import TelegramBot, run_telegram_bot
 import multiprocessing
 import webbrowser
+
+
+favorite_path = os.path.abspath('./Resources')+'\\'
+favorite_file = 'fav.bin'
+
 
 class MainGUI:
     def reset_button_colors(self):
@@ -87,7 +93,7 @@ class MainGUI:
         self.email_window.destroy()
 
     def send_email(self):
-        if(self.email_window == None or not self.email_window.winfo_exists()):
+        if self.email_window is None or not self.email_window.winfo_exists():
             self.email_window = Toplevel(self.window)
 
             Label(self.email_window, text="즐겨찾기에 등록된 거래 기록을 입력한 메일로 전송하겠습니다.").pack()
@@ -122,26 +128,13 @@ class MainGUI:
         self.region_code = sgg_codes[sido][sgg]
         sgg_full_name = sido+' '+sgg
 
-        self.data_list = get_apart_trade_data(self.region_code, self.get_ym())
+        self.cur_ym = self.get_ym()
+        self.data_list = get_apart_trade_data(self.region_code, self.cur_ym)
         valid_names = get_valid_umd_names(self.data_list)
         self.local_option_umd = self.local_option_umd[:1]
         self.local_option_umd += valid_names
         self.option_menu_umd['values'] = self.local_option_umd
         self.option_menu_umd.set(self.local_option_umd[0])
-
-    def get_xy_data_kakao(self, search_location_strs):
-        rt_list = []
-        for s in search_location_strs:
-            locate = lotaddr_to_roadname(s)
-            if not locate:
-                continue
-
-            x, y = kakaomap_xy_search(locate['roadAddr'])
-            if not x:
-                continue
-
-            rt_list.append((x, y, s.split()[2]))
-        return rt_list
 
     def mark_apart_location(self, data_list):
         self.map.delete_all_marker()
@@ -152,7 +145,9 @@ class MainGUI:
             keywords.add(loc)
         keywords = list(keywords)
 
-        xy_list = self.get_xy_data_kakao(keywords)
+        p = multiprocessing.Pool(4)
+        xy_list = p.map(kakaomap_xy_search, keywords, 4)
+        xy_list = list(filter(lambda t: not t[0] is None, xy_list))
 
         for x, y, apart in xy_list:
             self.map.set_marker(y, x, apart)
@@ -178,7 +173,7 @@ class MainGUI:
 
         self.mark_apart_location(self.data_list)
 
-        umd_x, umd_y = kakaomap_xy_search(sido + ' ' + sgg + ' ' + umd)
+        umd_x, umd_y, _ = kakaomap_xy_search(sido + ' ' + sgg + ' ' + umd)
         self.map.set_position(umd_y, umd_x)
 
         for value in self.favorite_buffer.values():
@@ -199,10 +194,6 @@ class MainGUI:
         self.favorite_buttons[index].destroy()
         del self.favorite_database[index]
         self.display_result(self.favorite_database, self.favorite_canvas)
-
-
-
-
 
     def sort_invoke(self, event):
         match self.sort_option.get():
@@ -296,6 +287,7 @@ class MainGUI:
 
         # 검색용 변수들
         self.region_code = ''
+        self.cur_ym = ''
         self.sgg_codes = {}
         self.umd_codes = {}
 
@@ -324,6 +316,8 @@ class MainGUI:
         self.favorite_buttons = []
         self.favorite_buffer = {}
         self.favorite_database = []
+        if ApiFileIO.search_file(favorite_path, favorite_file):
+            self.favorite_database = ApiFileIO.read_binary_dict_in_list(favorite_path+favorite_file)
 
         # 우측 콘텐츠 프레임
         self.content_frame = Frame(self.window)
@@ -453,6 +447,8 @@ class MainGUI:
         if self.telegram_process.is_alive():
             self.telegram_process.terminate()
             self.telegram_process.join()
+
+        ApiFileIO.write_binary_dict_in_list(favorite_path+favorite_file, self.favorite_database)
 
         if self.window:
             self.window.destroy()
