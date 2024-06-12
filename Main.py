@@ -44,6 +44,11 @@ class MainGUI:
     def show_graph(self):
         self.reset_button_colors()
         self.btn_graph.config(bg='red', fg='white')
+
+        for value in self.favorite_buffer.values():
+            self.favorite_database.append(value)
+        self.favorite_buffer = {}
+
         if self.data_list:
             self.display_bar_graph(self.graph_canvas, self.data_list)
         self.graph_frame.tkraise()
@@ -70,6 +75,9 @@ class MainGUI:
         result = []
         for dict_item in self.favorite_database:
             item_str = "\n".join([f"{key}: {value}" for key, value in dict_item.items()])
+            result.append(item_str)
+        for item in self.favorite_buffer.values():
+            item_str = "\n".join([f"{key}: {value}" for key, value in item.items()])
             result.append(item_str)
 
         content = "\n---------------\n".join(result)
